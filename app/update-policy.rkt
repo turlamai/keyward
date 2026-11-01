@@ -8,6 +8,7 @@
 ;; the *application build*, never read from the feed being verified.
 
 (require racket/port
+         racket/string
          rivet/distribution)
 
 (provide keyward-update-application-id
@@ -50,6 +51,25 @@
                     expected-key-id 0 keyward-update-maximum-bytes 'app))
   (define candidate (select-update config verified
                                    #:install-kind install-kind))
+  (when candidate
+    ;; The signer must bind downloads to this exact immutable release tag.
+    ;; A signed moving latest URL could otherwise change between preview
+    ;; and download, especially if the host later adds resume support.
+    (define artifact-url
+      (update-artifact-url (update-candidate-artifact candidate)))
+    (define prefix
+      (format "https://github.com/turlamai/keyward/releases/download/v~a/"
+              (update-manifest-version verified)))
+    (define name
+      (and (string-prefix? artifact-url prefix)
+           (substring artifact-url (string-length prefix))))
+    (unless (and name
+                 (regexp-match? #px"^[A-Za-z0-9][A-Za-z0-9._+-]*$" name)
+                 (not (string-contains? name "..")))
+      (raise-arguments-error
+       'preview-keyward-update
+       "signed asset is not pinned to the official immutable release tag"
+       "url" artifact-url "expected prefix" prefix)))
   (when (and candidate
              (> (update-artifact-size (update-candidate-artifact candidate))
                 keyward-update-maximum-bytes))
