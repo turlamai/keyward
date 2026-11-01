@@ -13,12 +13,16 @@
 
 (provide keyward-update-application-id
          keyward-update-maximum-bytes
+         keyward-update-maximum-manifest-bytes
          preview-keyward-update)
 
 (define keyward-update-application-id "site.jrtx.keyward")
 ;; Bound total update payload size *before* any download; Rivet also enforces
 ;; the exact authenticated size while downloading.
 (define keyward-update-maximum-bytes (* 512 1024 1024))
+;; The signed wrapper contains metadata only. Reject giant payloads before
+;; the JSON decoder or Ed25519 verifier allocates additional memory.
+(define keyward-update-maximum-manifest-bytes (* 1024 1024))
 
 (define (preview-keyward-update signed-manifest-bytes
                                 #:user-initiated? user-initiated?
@@ -40,6 +44,18 @@
   (unless (bytes? signed-manifest-bytes)
     (raise-argument-error 'preview-keyward-update
                           "bytes?" signed-manifest-bytes))
+  (when (> (bytes-length signed-manifest-bytes)
+           keyward-update-maximum-manifest-bytes)
+    (raise-arguments-error
+     'preview-keyward-update
+     "signed manifest exceeds the configured metadata size limit"
+     "bytes" (bytes-length signed-manifest-bytes)
+     "limit" keyward-update-maximum-manifest-bytes))
+  (unless (memq install-kind '(portable msi appimage package-manager))
+    (raise-arguments-error
+     'preview-keyward-update
+     "an explicit supported installation kind is required"
+     "install kind" install-kind))
   (define verified
     (verify-signed-manifest (open-input-bytes signed-manifest-bytes)
                             trusted-public-key
