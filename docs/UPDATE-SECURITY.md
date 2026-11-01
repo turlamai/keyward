@@ -1,0 +1,57 @@
+# Keyward update trust and privacy contract
+
+Keyward is a release-signing key vault. Updates must never turn possession
+of a private signing key into an unattended network capability.
+
+## Current availability
+
+The published v0.3.0 release is **manual-update only**. Its build pipeline
+explicitly uses `raco rivet release --without-updates`. There is currently
+no production Ed25519 update trust root embedded in the application and no
+native install handoff. No implementation may claim automatic update support
+for this version.
+
+`app/update-policy.rkt` introduces the *offline trust decision* needed for
+future explicit user-initiated checks. It does **not** download, install, or
+contact a release server. It does not load the vault or any private key.
+The release feed must be signed with the official update signing key; the
+corresponding public key and exact key ID are pinned into the shipped
+application, never supplied by downloaded metadata.
+
+## Future product flow
+
+1. The user chooses **Check for Updates**. Starting Keyward or opening a
+   signing vault must make no update network request by default.
+2. The host fetches only the signed manifest from the official release
+   location, with bounded size and request timeout. It never sends key
+   names, vault locations, entry counts, hashes, or signing identities.
+3. The backend checks Ed25519 signature and pinned key ID *before* accepting
+   release metadata. The manifest must match the Keyward application ID,
+   stable channel, OS/architecture, install kind, and an immutable official
+   release-tag URL. Reject downgrades and payloads above the signed/overall
+   size limit.
+4. The UI presents the version, installer type, verified byte size and
+   changelog before a **second** user authorization to download/install.
+5. Download to a disposable staging directory with cancellation, SHA-256,
+   size and atomic completion checks. No downloaded executable runs before
+   verification.
+6. Native installation is separate: Windows MSI upgrade, macOS app-bundle
+   replacement with rollback, Linux AppImage replacement or DEB/RPM package
+   manager handoff. Do not replace package-manager-owned files directly.
+   User vaults, snapshots and signing keys remain at their original paths.
+7. CI uses a synthetic disposable vault to verify N-to-N+1 upgrades,
+   restart persistence, rejected signatures, failed installation rollback,
+   and preservation of file contents. It must never use a live vault.
+
+## Release-signing prerequisites
+
+Provision a dedicated Ed25519 **update** key in the secure signing system;
+this is not a Keyward-managed product signing key or an exported vault
+private key. Commit only its public trust root and identifier. Store the
+private half exclusively in the protected release secret store. The release
+workflow must fail closed without the correct signing secret and must
+confirm the signed payload matches every published asset.
+
+Until those prerequisites, platform handoffs, CI and UI have passed,
+continue offering manual installer downloads. See Issue #15 for the
+remaining implementation and acceptance work.
