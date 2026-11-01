@@ -117,4 +117,37 @@
                                                 [size (add1 keyward-update-maximum-bytes)]))])
                private-key))))
 
+;; An explicit package-manager install format is mandatory on Linux: a
+;; valid signed release may contain both Debian and RPM payloads and the
+;; native host must never pick one based on their order in the feed.
+(define linux-deb
+  (update-artifact 'linux 'x64
+                   "https://github.com/turlamai/keyward/releases/download/v0.4.0/keyward-0.4.0-linux-amd64.deb"
+                   (make-string 64 #\b) 4096 'deb '() #f))
+(define linux-rpm
+  (update-artifact 'linux 'x64
+                   "https://github.com/turlamai/keyward/releases/download/v0.4.0/keyward-0.4.0-linux-x86_64.rpm"
+                   (make-string 64 #\c) 4096 'rpm '() #f))
+(define linux-release
+  (struct-copy update-manifest release
+               [artifacts (list linux-rpm linux-deb)]))
+(define linux-signed (signed-by linux-release private-key))
+(define (preview-linux format)
+  (preview-keyward-update
+   linux-signed #:user-initiated? #t
+   #:trusted-public-key trusted-public-key
+   #:expected-key-id key-id
+   #:current-version "0.3.0"
+   #:install-kind 'package-manager
+   #:linux-package-format format
+   #:platform 'linux #:architecture 'x64))
+(check-exn #rx"declared deb or rpm format"
+           (lambda () (preview-linux #f)))
+(check-equal? (update-artifact-installer
+               (update-candidate-artifact (preview-linux 'deb)))
+              'deb)
+(check-equal? (update-artifact-installer
+               (update-candidate-artifact (preview-linux 'rpm)))
+              'rpm)
+
 (displayln "Keyward offline update trust policy passed")
