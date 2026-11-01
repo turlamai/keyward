@@ -60,11 +60,13 @@
     (verify-signed-manifest (open-input-bytes signed-manifest-bytes)
                             trusted-public-key
                             #:key-id expected-key-id))
+  ;; Rivet v0.13's built-in release app payloads have component #f.
+  ;; Selecting 'app here would silently ignore every valid release MSI/ZIP.
   (define config
     (updater-config keyward-update-application-id
                     current-version 'stable
                     platform architecture trusted-public-key
-                    expected-key-id 0 keyward-update-maximum-bytes 'app))
+                    expected-key-id 0 keyward-update-maximum-bytes #f))
   (define candidate (select-update config verified
                                    #:install-kind install-kind))
   (when candidate
