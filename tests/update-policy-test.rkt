@@ -54,6 +54,13 @@
            (lambda () (preview signed #:consent? #f)))
 (check-exn #rx"pinned, non-empty"
            (lambda () (preview signed #:id "")))
+(check-exn #rx"metadata size limit"
+           (lambda ()
+             (preview (make-bytes
+                       (add1 keyward-update-maximum-manifest-bytes)
+                       65))))
+(check-exn #rx"explicit supported installation kind"
+           (lambda () (preview signed #:install-kind #f)))
 (define candidate (preview signed))
 (check-true (update-candidate? candidate))
 (check-equal? (update-artifact-installer
