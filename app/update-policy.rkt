@@ -1,0 +1,64 @@
+#lang racket/base
+
+;; Keyward handles signing secrets, so updates must not silently contact a
+;; server or modify an installed vault. This is deliberately a pure/offline
+;; policy and trust boundary, not a network updater or installation handler.
+;; The future explicit "Check for updates" UI provides the manifest bytes
+;; only after user consent; its trusted public key/key ID must be embedded in
+;; the *application build*, never read from the feed being verified.
+
+(require racket/port
+         rivet/distribution)
+
+(provide keyward-update-application-id
+         keyward-update-maximum-bytes
+         preview-keyward-update)
+
+(define keyward-update-application-id "site.jrtx.keyward")
+;; Bound total update payload size *before* any download; Rivet also enforces
+;; the exact authenticated size while downloading.
+(define keyward-update-maximum-bytes (* 512 1024 1024))
+
+(define (preview-keyward-update signed-manifest-bytes
+                                #:user-initiated? user-initiated?
+                                #:trusted-public-key trusted-public-key
+                                #:expected-key-id expected-key-id
+                                #:current-version current-version
+                                #:install-kind install-kind
+                                #:platform [platform (platform-symbol)]
+                                #:architecture [architecture (architecture-symbol)])
+  (unless user-initiated?
+    (raise-arguments-error
+     'preview-keyward-update
+     "security vault update checks require explicit user action"))
+  (unless (and (string? expected-key-id)
+               (positive? (string-length expected-key-id)))
+    (raise-arguments-error
+     'preview-keyward-update
+     "a pinned, non-empty update signing key ID is required"))
+  (unless (bytes? signed-manifest-bytes)
+    (raise-argument-error 'preview-keyward-update
+                          "bytes?" signed-manifest-bytes))
+  (define verified
+    (verify-signed-manifest (open-input-bytes signed-manifest-bytes)
+                            trusted-public-key
+                            #:key-id expected-key-id))
+  (define config
+    (updater-config keyward-update-application-id
+                    current-version 'stable
+                    platform architecture trusted-public-key
+                    expected-key-id 0 keyward-update-maximum-bytes 'app))
+  (define candidate (select-update config verified
+                                   #:install-kind install-kind))
+  (when (and candidate
+             (> (update-artifact-size (update-candidate-artifact candidate))
+                keyward-update-maximum-bytes))
+    (raise-arguments-error
+     'preview-keyward-update
+     "signed update exceeds maximum permitted download size"
+     "bytes" (update-artifact-size (update-candidate-artifact candidate))
+     "limit" keyward-update-maximum-bytes))
+  ;; Returning a candidate does *not* authorize a network request, download,
+  ;; installer launch, or key-vault file modification. That requires a later
+  ;; explicit user confirmation and native-host handoff.
+  candidate)
