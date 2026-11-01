@@ -21,7 +21,7 @@
   "https://github.com/turlamai/keyward/releases/download/v0.4.0/keyward-0.4.0-windows-x64.msi")
 (define artifact
   (update-artifact 'windows 'x64 asset-url (make-string 64 #\a)
-                   4096 'msi '() 'app))
+                   4096 'msi '() #f))
 (define release
   (update-manifest keyward-update-application-id "0.4.0" 1
                    'stable "2026-11-01T00:00:00Z" "0.0.0" #f
@@ -63,6 +63,8 @@
            (lambda () (preview signed #:install-kind #f)))
 (define candidate (preview signed))
 (check-true (update-candidate? candidate))
+(check-false (update-artifact-component
+              (update-candidate-artifact candidate)))
 (check-equal? (update-artifact-installer
                (update-candidate-artifact candidate))
               'msi)
