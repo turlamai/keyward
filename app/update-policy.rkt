@@ -9,6 +9,7 @@
 
 (require racket/port
          racket/string
+         racket/list
          rivet/distribution)
 
 (provide keyward-update-application-id
@@ -30,6 +31,7 @@
                                 #:expected-key-id expected-key-id
                                 #:current-version current-version
                                 #:install-kind install-kind
+                                #:linux-package-format [linux-package-format #f]
                                 #:platform [platform (platform-symbol)]
                                 #:architecture [architecture (architecture-symbol)])
   (unless user-initiated?
@@ -56,6 +58,17 @@
      'preview-keyward-update
      "an explicit supported installation kind is required"
      "install kind" install-kind))
+  ;; Rivet's generic 'package-manager selector accepts both DEB and RPM.
+  ;; A vault must never pick the first matching entry by list order:
+  ;; the native host has to supply the actual package-manager format.
+  (when (eq? install-kind 'package-manager)
+    (unless (and (eq? platform 'linux)
+                 (memq linux-package-format '(deb rpm)))
+      (raise-arguments-error
+       'preview-keyward-update
+       "Linux package-manager updates require a declared deb or rpm format"
+       "platform" platform
+       "package format" linux-package-format)))
   (define verified
     (verify-signed-manifest (open-input-bytes signed-manifest-bytes)
                             trusted-public-key
@@ -67,8 +80,23 @@
                     current-version 'stable
                     platform architecture trusted-public-key
                     expected-key-id 0 keyward-update-maximum-bytes #f))
-  (define candidate (select-update config verified
-                                   #:install-kind install-kind))
+  (define selection-manifest
+    (if (eq? install-kind 'package-manager)
+        (struct-copy update-manifest verified
+          [artifacts (filter
+                      (lambda (artifact)
+                        (eq? (update-artifact-installer artifact)
+                             linux-package-format))
+                      (update-manifest-artifacts verified))])
+        verified))
+  (define selection
+    (select-update config selection-manifest
+                   #:install-kind install-kind))
+  ;; Preserve the exact authenticated release metadata in the returned
+  ;; candidate: the temporary format-filtered manifest is selection-only.
+  (define candidate
+    (and selection
+         (update-candidate verified (update-candidate-artifact selection))))
   (when candidate
     ;; The signer must bind downloads to this exact immutable release tag.
     ;; A signed moving latest URL could otherwise change between preview
