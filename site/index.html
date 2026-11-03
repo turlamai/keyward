@@ -156,24 +156,24 @@ html:lang(en) .reader-zh,html:lang(zh) .reader-en{display:none!important}@media(
     <div class="dl-grid">
       <div class="dl-card">
         <h3 data-i18n="dl-mac-title">macOS（Apple Silicon / Intel）</h3>
-        <p data-i18n="dl-mac">DMG 安装器与便携 zip，arm64 / x64 双架构，随附逐件 SHA-256 与 SHA256SUMS 供校验。v0.2.0 已发布。</p>
-        <a class="btn btn-primary" id="dl-mac-auto" href="https://github.com/turlamai/keyward/releases/latest/download/keyward-macos-arm64.dmg" data-i18n="dl-mac-go">下载 DMG →</a>
+        <p data-i18n="dl-mac">DMG 安装器与便携 zip，arm64 / x64 双架构，随附统一的 SHA256SUMS 校验文件。请以最新 Release 为准。</p>
+        <a class="btn btn-primary" id="dl-mac-auto" href="https://github.com/turlamai/keyward/releases/latest" data-release-suffix="macos-arm64.dmg" data-i18n="dl-mac-go">下载 DMG →</a>
         <p class="dl-links muted">
-          <a href="https://github.com/turlamai/keyward/releases/latest/download/keyward-macos-arm64.dmg">arm64 DMG</a> ·
-          <a href="https://github.com/turlamai/keyward/releases/latest/download/keyward-macos-x64.dmg">x64 DMG</a> ·
+          <a href="https://github.com/turlamai/keyward/releases/latest" data-release-suffix="macos-arm64.dmg">arm64 DMG</a> ·
+          <a href="https://github.com/turlamai/keyward/releases/latest" data-release-suffix="macos-x64.dmg">x64 DMG</a> ·
           <a href="https://github.com/turlamai/keyward/releases/latest/download/SHA256SUMS">SHA256SUMS</a> ·
           <a href="https://github.com/turlamai/keyward/releases" data-i18n="dl-all">全部版本 →</a>
         </p>
       </div>
       <div class="dl-card">
         <h3 data-i18n="dl-win-lin-title">Windows（x64）/ Linux</h3>
-        <p data-i18n="dl-win-lin">WinUI 3 与 GTK4 原生壳已随 v0.2.0 交付：Windows 为 MSI + 便携 zip，Linux 为 x64/arm64 的 deb、rpm、AppImage、tar.gz 与便携 zip，随附 SHA-256 校验与 SBOM。</p>
-        <a class="btn btn-primary" href="https://github.com/turlamai/keyward/releases/latest/download/keyward-windows-x64.msi" data-i18n="dl-win-go">下载 MSI →</a>
+        <p data-i18n="dl-win-lin">WinUI 3 与 GTK4 原生壳已随 v0.2.0 交付：Windows 为 MSI + 便携 zip，Linux 为 x64/arm64 的 deb、rpm、AppImage、tar.gz 与便携 zip，随附 SHA256SUMS 校验文件与 SBOM。</p>
+        <a class="btn btn-primary" href="https://github.com/turlamai/keyward/releases/latest" data-release-suffix="windows-x64.msi" data-i18n="dl-win-go">下载 MSI →</a>
         <p class="dl-links muted">
-          <a href="https://github.com/turlamai/keyward/releases/latest/download/keyward-linux-x64.deb">Linux x64 deb</a> ·
-          <a href="https://github.com/turlamai/keyward/releases/latest/download/keyward-linux-arm64.deb">arm64 deb</a> ·
-          <a href="https://github.com/turlamai/keyward/releases/latest/download/keyward-linux-x64.AppImage">x64 AppImage</a> ·
-          <a href="https://github.com/turlamai/keyward/releases/latest/download/keyward-linux-arm64.AppImage">arm64 AppImage</a> ·
+          <a href="https://github.com/turlamai/keyward/releases/latest" data-release-suffix="linux-x64.deb">Linux x64 deb</a> ·
+          <a href="https://github.com/turlamai/keyward/releases/latest" data-release-suffix="linux-arm64.deb">arm64 deb</a> ·
+          <a href="https://github.com/turlamai/keyward/releases/latest" data-release-suffix="linux-x64.AppImage">x64 AppImage</a> ·
+          <a href="https://github.com/turlamai/keyward/releases/latest" data-release-suffix="linux-arm64.AppImage">arm64 AppImage</a> ·
           <a href="https://github.com/turlamai/keyward/releases" data-i18n="dl-all">全部版本 →</a>
         </p>
       </div>
@@ -246,11 +246,11 @@ html:lang(en) .reader-zh,html:lang(zh) .reader-en{display:none!important}@media(
       's3-body': 'Generate, import, edit, delete — each step snapshots first; restoring is one click. Values leave only through copy-to-clipboard, never a display.',
       'download-title': 'Download',
       'dl-mac-title': 'macOS (Apple Silicon / Intel)',
-      'dl-mac': 'DMG installers and portable zips for arm64 / x64, with per-file SHA-256 sidecars and a SHA256SUMS for verification. v0.2.0 is out.',
+      'dl-mac': 'DMG installers and portable zips for arm64 / x64, with a verified SHA256SUMS for verification. Use the latest Release.',
       'dl-mac-go': 'Download DMG →',
       'dl-all': 'All releases →',
       'dl-win-lin-title': 'Windows (x64) / Linux',
-      'dl-win-lin': 'The WinUI 3 and GTK4 native hosts shipped with v0.2.0: an MSI plus portable zip on Windows, and deb, rpm, AppImage, tar.gz and portable zip for Linux x64 + arm64, with SHA-256 sidecars and SBOMs.',
+      'dl-win-lin': 'The WinUI 3 and GTK4 native hosts shipped with v0.2.0: an MSI plus portable zip on Windows, and deb, rpm, AppImage, tar.gz and portable zip for Linux x64 + arm64, with SHA256SUMS and SBOMs.',
       'dl-win-go': 'Download MSI →',
       'dl-platforms-title': 'Platforms',
       'dl-platforms-body': 'v0.2.0 is out: macOS, Windows and Linux installers are all live. A developer tool — no mobile.',
@@ -293,11 +293,11 @@ html:lang(en) .reader-zh,html:lang(zh) .reader-en{display:none!important}@media(
       's3-body': '生成、导入、修改、删除，每一步都先落快照；要回滚，恢复就是一次点击。值想用时复制进剪贴板，永不回显。',
       'download-title': '下载',
       'dl-mac-title': 'macOS（Apple Silicon / Intel）',
-      'dl-mac': 'DMG 安装器与便携 zip，arm64 / x64 双架构，随附逐件 SHA-256 与 SHA256SUMS 供校验。v0.2.0 已发布。',
+      'dl-mac': 'DMG 安装器与便携 zip，arm64 / x64 双架构，随附统一的 SHA256SUMS 校验文件。请以最新 Release 为准。',
       'dl-mac-go': '下载 DMG →',
       'dl-all': '全部版本 →',
       'dl-win-lin-title': 'Windows（x64）/ Linux',
-      'dl-win-lin': 'WinUI 3 与 GTK4 原生壳已随 v0.2.0 交付：Windows 为 MSI + 便携 zip，Linux 为 x64/arm64 的 deb、rpm、AppImage、tar.gz 与便携 zip，随附 SHA-256 校验与 SBOM。',
+      'dl-win-lin': 'WinUI 3 与 GTK4 原生壳已随 v0.2.0 交付：Windows 为 MSI + 便携 zip，Linux 为 x64/arm64 的 deb、rpm、AppImage、tar.gz 与便携 zip，随附 SHA256SUMS 校验文件与 SBOM。',
       'dl-win-go': '下载 MSI →',
       'dl-platforms-title': '平台',
       'dl-platforms-body': 'v0.2.0 已发布：macOS、Windows、Linux 三平台安装包全部上线。这是开发者工具，不做移动端。',
@@ -334,27 +334,41 @@ html:lang(en) .reader-zh,html:lang(zh) .reader-en{display:none!important}@media(
     localStorage.setItem('keyward-theme', next);
   });
 
-  // Direct downloads: on a Mac, point the hero button and the download
-  // card at releases/latest/download/keyward-macos-<arch>.dmg. The
-  // architecture comes from the GPU renderer string (Apple Silicon
-  // reports an Apple GPU, Intel Macs report Intel); anything ambiguous
-  // stays on arm64 — the dev-audience default. Non-Mac browsers keep
-  // the #download anchor, which lists all three platforms' downloads.
+  // Architecture is a user choice when unknown. Never publish a versionless
+  // duplicate merely to make a download link: resolve the exact versioned
+  // release asset, falling back to the stable Releases page when offline.
   (function () {
-    if (!/Mac/.test(navigator.userAgent)) return;
-    var arch = 'arm64';
-    try {
-      var canvas = document.createElement('canvas');
-      var gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-      var ext = gl && gl.getExtension('WEBGL_debug_renderer_info');
-      var renderer = ext ? String(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)) : '';
-      if (renderer && /intel/i.test(renderer)) arch = 'x64';
-    } catch (e) { /* keep arm64 */ }
-    var url = 'https://github.com/turlamai/keyward/releases/latest/download/keyward-macos-' + arch + '.dmg';
-    var hero = document.getElementById('hero-download');
-    if (hero) hero.setAttribute('href', url);
-    var card = document.getElementById('dl-mac-auto');
-    if (card) card.setAttribute('href', url);
+    var page = 'https://github.com/turlamai/keyward/releases/latest';
+    if (/Mac/.test(navigator.userAgent)) {
+      var arch = 'arm64';
+      try {
+        var gl = document.createElement('canvas').getContext('webgl');
+        var ext = gl && gl.getExtension('WEBGL_debug_renderer_info');
+        var gpu = ext ? String(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)) : '';
+        if (/intel/i.test(gpu)) arch = 'x64';
+      } catch (_) { /* user may choose architecture on the release page */ }
+      ['hero-download', 'dl-mac-auto'].forEach(function (id) {
+        var link = document.getElementById(id);
+        if (link) { link.href = page; link.dataset.releaseSuffix = 'macos-' + arch + '.dmg'; }
+      });
+    }
+    var links = document.querySelectorAll('a[data-release-suffix]');
+    links.forEach(function (link) { link.href = page; });
+    fetch('https://api.github.com/repos/turlamai/keyward/releases/latest',
+          {headers: {'Accept': 'application/vnd.github+json'}})
+      .then(function (response) { if (!response.ok) throw new Error('release lookup'); return response.json(); })
+      .then(function (release) {
+        if (release.draft || release.prerelease || !/^v[0-9]+\\.[0-9]+\\.[0-9]+$/.test(release.tag_name)) return;
+        var version = release.tag_name.slice(1);
+        links.forEach(function (link) {
+          var name = 'keyward-' + version + '-' + link.dataset.releaseSuffix;
+          var asset = (release.assets || []).find(function (entry) { return entry.name === name && entry.size > 0; });
+          if (asset && asset.browser_download_url ===
+              'https://github.com/turlamai/keyward/releases/download/' + release.tag_name + '/' + name) {
+            link.href = asset.browser_download_url;
+          }
+        });
+      }).catch(function () { /* Release page remains usable without API access. */ });
   })();
 
   setLang(document.documentElement.lang === 'zh-CN' ? 'zh' : 'en');
