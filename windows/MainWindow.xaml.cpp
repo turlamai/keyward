@@ -2277,7 +2277,7 @@ winrt::fire_and_forget MainWindow::OnAbout(
   auto issue = mxc::HyperlinkButton{};
   issue.Content(winrt::box_value(L"Report an Issue"));
   issue.NavigateUri(winrt::Windows::Foundation::Uri{
-      L"https://github.com/turinglambdaai/keyward/issues"});
+      L"https://github.com/turlamai/keyward/issues"});
   issue.HorizontalAlignment(mx::HorizontalAlignment::Center);
   issue.Padding({0, 0, 0, 0});
   panel.Children().Append(tagline);
@@ -2300,7 +2300,7 @@ winrt::fire_and_forget MainWindow::OnGuide(
     mx::RoutedEventArgs const&) {
   co_await winrt::Windows::System::Launcher::LaunchUriAsync(
       winrt::Windows::Foundation::Uri{
-          L"https://github.com/turinglambdaai/keyward/blob/main/docs/"
+          L"https://github.com/turlamai/keyward/blob/main/docs/"
           L"GUIDE.zh-CN.md"});
 }
 

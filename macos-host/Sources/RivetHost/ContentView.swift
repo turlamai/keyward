@@ -945,7 +945,7 @@ struct AboutSheet: View {
                      destination: URL(string: "https://keyward.jrtx.site")!)
                 Link("Report an Issue",
                      destination: URL(string:
-                        "https://github.com/turinglambdaai/keyward/issues")!)
+                        "https://github.com/turlamai/keyward/issues")!)
             }
             .font(.system(size: 12))
             Button("Done") { dismiss() }

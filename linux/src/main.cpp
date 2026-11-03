@@ -74,9 +74,9 @@ struct StrayRow {
 };
 
 constexpr char const* kGuideUrl =
-    "https://github.com/turinglambdaai/keyward/blob/main/docs/GUIDE.zh-CN.md";
+    "https://github.com/turlamai/keyward/blob/main/docs/GUIDE.zh-CN.md";
 constexpr char const* kIssuesUrl =
-    "https://github.com/turinglambdaai/keyward/issues";
+    "https://github.com/turlamai/keyward/issues";
 constexpr char const* kUpdateKeyName = "UPDATE_ED25519_PRIVATE_KEY_B64";
 
 struct AppState {
