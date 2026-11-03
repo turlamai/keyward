@@ -236,27 +236,49 @@ jobs:
             on {print}
           ' CHANGELOG.md > /tmp/notes.md
           test -s /tmp/notes.md || { echo "empty release notes" >&2; exit 1; }
+          # Release only versioned installers, portable archives, and the
+          # SBOM evidence; keep individual checksums in CI artifacts.
           cd dist
-          for f in *.sha256; do [ -s "$f" ] || rm -f "$f"; done
-          cat *.sha256 > SHA256SUMS
-          # Stable direct links (site hero / docs point here):
-          #   releases/latest/download/keyward-macos-arm64.dmg
-          #   releases/latest/download/keyward-macos-x64.dmg
-          #   releases/latest/download/keyward-windows-x64.msi
-          #   releases/latest/download/keyward-linux-x64.deb
-          #   releases/latest/download/keyward-linux-x64.AppImage  (+ arm64 twins)
-          # The alias is a byte-for-byte copy of the arch-named asset, so
-          # the checksum sidecar of the suffixed name verifies it too.
-          cp "keyward-${VERSION}-macos-arm64.dmg" keyward-macos-arm64.dmg
-          cp "keyward-${VERSION}-macos-x64.dmg" keyward-macos-x64.dmg
-          cp "keyward-${VERSION}-windows-x64.msi" keyward-windows-x64.msi
-          cp "keyward-${VERSION}-linux-amd64.deb" keyward-linux-x64.deb
-          cp "keyward-${VERSION}-linux-arm64.deb" keyward-linux-arm64.deb
-          cp "keyward-${VERSION}-linux-x86_64.AppImage" keyward-linux-x64.AppImage
-          cp "keyward-${VERSION}-linux-aarch64.AppImage" keyward-linux-arm64.AppImage
-          gh release create "$GITHUB_REF_NAME" \
-            --title "Keyward ${VERSION}" \
-            --notes-file /tmp/notes.md \
-            --latest \
-            *.dmg *.zip *.msi *.tar.gz *.deb *.rpm *.AppImage \
-            *.sbom.cdx.json *.sha256 SHA256SUMS
+          cat *.sha256 | sed 's/ \*/  /' | LC_ALL=C sort -k2 > SHA256SUMS
+          sha256sum --check SHA256SUMS
+          cd ..
+          mkdir -p public
+          for suffix in \
+            macos-arm64.dmg macos-arm64.zip macos-x64.dmg macos-x64.zip \
+            windows-x64.msi windows-x64.zip \
+            linux-arm64.tar.gz linux-arm64.zip linux-x64.tar.gz linux-x64.zip \
+            linux-arm64.deb linux-amd64.deb \
+            linux-aarch64.AppImage linux-x86_64.AppImage \
+            linux-arm64.sbom.cdx.json linux-x64.sbom.cdx.json \
+            windows-x64.sbom.cdx.json; do
+            name="keyward-$VERSION-$suffix"
+            test -s "dist/$name" || { echo "::error::Missing or empty $name"; exit 1; }
+            cp "dist/$name" public/
+          done
+          for arch in aarch64 x86_64; do
+            rpm="$(find dist -maxdepth 1 -type f -name "keyward-$VERSION-*-linux-$arch.rpm" -print -quit)"
+            test -s "$rpm" || { echo "::error::Missing RPM $arch"; exit 1; }
+            cp "$rpm" public/
+          done
+          # Rebuild the public checksum inventory after staging, so the
+          # published SBOMs are covered too (the CI sidecars cover binaries).
+          # RPM revision is independent of app SemVer.
+          test "$(find public -maxdepth 1 -type f -name 'keyward-*' | wc -l)" -eq 19
+          (cd public && sha256sum keyward-* | LC_ALL=C sort -k2 > SHA256SUMS && sha256sum -c SHA256SUMS)
+          test "$(wc -l < public/SHA256SUMS)" -eq 19
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release edit "$GITHUB_REF_NAME" --title "Keyward $VERSION" --notes-file /tmp/notes.md
+            gh release upload "$GITHUB_REF_NAME" public/* --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" \
+              --title "Keyward $VERSION" \
+              --notes-file /tmp/notes.md \
+              --latest \
+              public/*
+          fi
+          gh release view "$GITHUB_REF_NAME" --json assets --jq '.assets[].name' |
+            while IFS= read -r name; do
+              if [ ! -f "public/$name" ]; then
+                gh release delete-asset "$GITHUB_REF_NAME" "$name" --yes
+              fi
+            done
