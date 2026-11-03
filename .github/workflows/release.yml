@@ -260,10 +260,12 @@ jobs:
             test -s "$rpm" || { echo "::error::Missing RPM $arch"; exit 1; }
             cp "$rpm" public/
           done
-          cp dist/SHA256SUMS public/
+          # Rebuild the public checksum inventory after staging, so the
+          # published SBOMs are covered too (the CI sidecars cover binaries).
           # RPM revision is independent of app SemVer.
           test "$(find public -maxdepth 1 -type f -name 'keyward-*' | wc -l)" -eq 19
-          (cd public && sha256sum -c SHA256SUMS)
+          (cd public && sha256sum keyward-* | LC_ALL=C sort -k2 > SHA256SUMS && sha256sum -c SHA256SUMS)
+          test "$(wc -l < public/SHA256SUMS)" -eq 19
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
             gh release edit "$GITHUB_REF_NAME" --title "Keyward $VERSION" --notes-file /tmp/notes.md
             gh release upload "$GITHUB_REF_NAME" public/* --clobber
