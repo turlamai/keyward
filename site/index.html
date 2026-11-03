@@ -358,7 +358,7 @@ html:lang(en) .reader-zh,html:lang(zh) .reader-en{display:none!important}@media(
           {headers: {'Accept': 'application/vnd.github+json'}})
       .then(function (response) { if (!response.ok) throw new Error('release lookup'); return response.json(); })
       .then(function (release) {
-        if (release.draft || release.prerelease || !/^v[0-9]+\\.[0-9]+\\.[0-9]+$/.test(release.tag_name)) return;
+        if (release.draft || release.prerelease || !/^v[0-9]+\.[0-9]+\.[0-9]+$/.test(release.tag_name)) return;
         var version = release.tag_name.slice(1);
         links.forEach(function (link) {
           var name = 'keyward-' + version + '-' + link.dataset.releaseSuffix;
