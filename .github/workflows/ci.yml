@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -35,6 +36,10 @@ jobs:
           distribution: full
       - name: Install deps (docs/ci.md standard; rivet pinned)
         run: raco pkg install --auto --no-docs crypto 'https://github.com/turlamai/rivet.git#${{ env.RIVET_PIN }}'
+      # TEMPORARY: captures the ubuntu-only Ed25519 datum divergence (lengths
+      # and exception messages only, no key material). Remove with the fix.
+      - name: TEMP ed25519 datum diagnostics
+        run: racket scripts/diagnose-ed25519.rkt
       - name: Engine tests
         run: raco test tests/
       - name: Backend compiles against the RVT1 contract
