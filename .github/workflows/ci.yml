@@ -24,6 +24,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # Release preflight on every CI run: VERSION == rivet.rktd ==
+      # CHANGELOG must hold on main, not only at release time. Runs
+      # without racket, so it goes before the toolchain setup.
+      - name: Verify release version alignment (VERSION == rivet.rktd == CHANGELOG)
+        run: bash scripts/check-release-version.sh
       - uses: Bogdanp/setup-racket@v1.15
         with:
           version: stable
