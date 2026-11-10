@@ -139,23 +139,26 @@
   (for/sum ([c (in-string text)] [i (in-naturals)] #:when (and (< i up-to) (char=? c #\newline)))
     1))
 
-;; key-ish extensions: base64(DER), base64(PEM), binary DER, Sparkle 64B
+;; key-ish extensions: base64(DER), base64(PEM), binary DER, Sparkle 64B.
+;; Classification is by content (text vs binary), never by one leading
+;; byte: base64 text whose first character happens to be "0" — the seed's
+;; first byte in #xD0-#xD3, a 4/256 roll per generated key — is not a DER
+;; SEQUENCE, and misrouting it into the DER parse would leave no fallback
+;; (scan-text has already returned #f by then), swallowing the hit.
 (define (scan-key-ext full rel)
   (define bs (read-capped full))
   (cond
-    [(and (>= (bytes-length bs) 2) (= (bytes-ref bs 0) 48))
-     (define key (private-key-or-false bs))
-     (and key (list rel "0" "der-private" (public-fingerprint key)))]
-    [else
+    [(text-file? full)
      (define text (string-trim (bytes->string/latin-1 bs)))
-     (cond
-       [(text-file? full)
-        (or (let ([der (value->der text)])
-              (and der
-                   (let ([key (private-key-from-der der)])
-                     (and key (list rel "0" "der-private" (public-fingerprint key))))))
-            (sparkle-hit text rel))]
-       [else #f])]))
+     (or (let ([der (value->der text)])
+           (and der
+                (let ([key (private-key-from-der der)])
+                  (and key (list rel "0" "der-private" (public-fingerprint key))))))
+         (sparkle-hit text rel))]
+    [else
+     (and (>= (bytes-length bs) 2) (= (bytes-ref bs 0) 48)
+          (let ([key (private-key-or-false bs)])
+            (and key (list rel "0" "der-private" (public-fingerprint key)))))]))
 
 ;; Sparkle-style base64(seed||pub): 64 bytes forming a valid Ed25519 pair
 (define (sparkle-hit text rel)

@@ -9,7 +9,8 @@
          racket/list
          racket/path
          racket/string
-         (only-in crypto pk-key->datum)
+         (only-in crypto pk-key->datum datum->pk-key)
+         (only-in crypto/libcrypto libcrypto-factory)
          "../app/core/keyformats.rkt"
          "../app/core/keymeta.rkt"
          "../app/core/strayscan.rkt")
@@ -95,3 +96,29 @@
 
 ;; nonexistent root raises
 (check-exn exn:fail? (lambda () (stray-scan (build-path root "nope") '())))
+
+;; regression: a Sparkle file whose base64 text begins with "0" — the
+;; seed's first byte in #xD0-#xD3 — must still be detected. The old
+;; first-byte DER sniff misrouted exactly this roll (4/256 per generated
+;; key) into the binary-DER branch, where the failed parse swallowed the
+;; row with no fallback left.
+(define zero-leading-tree
+  (let ()
+    (define root (make-temporary-file "keyward-scan-zero~a" 'directory))
+    (define seed (bytes-append (bytes #xD0) (make-bytes 31 1)))
+    (define priv (datum->pk-key (list 'eddsa 'private 'ed25519 #f seed)
+                                'rkt-private (list libcrypto-factory)))
+    (define pub (list-ref (pk-key->datum priv 'rkt-private) 3))
+    (define text (b64 (bytes-append seed pub)))
+    ;; the precondition under test: base64 of seed||pub starts with "0"
+    (check-equal? (string-ref text 0) #\0)
+    (define p (build-path root "k/a.private"))
+    (make-directory* (path-only p))
+    (with-output-to-file p
+      (lambda () (display text))
+      #:exists 'replace)
+    root))
+(define zero-rows (stray-scan zero-leading-tree '()))
+(check-equal? (length zero-rows) 1)
+(check-equal? (car (car zero-rows)) "k/a.private")
+(check-equal? (list-ref (car zero-rows) 2) "sparkle-style-private")
