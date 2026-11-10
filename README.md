@@ -71,7 +71,7 @@ Download from [Releases](https://github.com/turlamai/keyward/releases/latest):
 |---|---|---|
 | macOS 14+ (Apple Silicon & Intel) | `keyward-<version>-macos-<arch>.dmg` — `arm64` / `x64` — plus a portable `.zip` per arch | manual download only — a key vault does not update itself ([docs/UPDATE-SECURITY.md](docs/UPDATE-SECURITY.md)) |
 | Windows 10+ x64 | `keyward-<version>-windows-x64.msi` installer, or `keyward-<version>-windows-x64.zip` portable | manual download only |
-| Linux x64 / arm64 | `keyward-<version>-linux-x86_64.AppImage` / `keyward-<version>-linux-aarch64.AppImage`, `keyward-<version>-linux-<distro-arch>.deb`, `.rpm`, or the portable `tar.gz` / `.zip` | manual download only |
+| Linux x64 / arm64 | `keyward-<version>-linux-x86_64.AppImage` / `keyward-<version>-linux-aarch64.AppImage`, `keyward-<version>-linux-<distro-arch>.deb`, `.rpm`, the Flatpak bundle `keyward-<version>-linux-<arch>.flatpak` (app id `site.jrtx.keyward`; `flatpak --user install ./keyward-<version>-linux-<arch>.flatpak`), or the portable `tar.gz` / `.zip` | manual download only |
 
 Every release carries a `SHA256SUMS` manifest, per-asset `.sha256`
 sidecars, CycloneDX SBOMs and Sigstore build provenance

@@ -59,7 +59,7 @@ AGPL-3.0 许可的免费发布基础设施工具，不接商业激活。 提供 
 |---|---|---|
 | macOS 14+（Apple Silicon 与 Intel） | `keyward-<version>-macos-<arch>.dmg`——`arm64` / `x64`，每种架构另附便携 `.zip` | 仅手动下载——密钥保险库不自我更新（[docs/UPDATE-SECURITY.md](docs/UPDATE-SECURITY.md)） |
 | Windows 10+ x64 | `keyward-<version>-windows-x64.msi` 安装器，或 `keyward-<version>-windows-x64.zip` 便携版 | 仅手动下载 |
-| Linux x64 / arm64 | `keyward-<version>-linux-x86_64.AppImage` / `keyward-<version>-linux-aarch64.AppImage`、`keyward-<version>-linux-<发行版架构>.deb`、`.rpm`，或便携版 `tar.gz` / `.zip` | 仅手动下载 |
+| Linux x64 / arm64 | `keyward-<version>-linux-x86_64.AppImage` / `keyward-<version>-linux-aarch64.AppImage`、`keyward-<version>-linux-<发行版架构>.deb`、`.rpm`、Flatpak bundle `keyward-<version>-linux-<arch>.flatpak`（app id `site.jrtx.keyward`；`flatpak --user install ./keyward-<version>-linux-<arch>.flatpak` 安装），或便携版 `tar.gz` / `.zip` | 仅手动下载 |
 
 每个发布都带 `SHA256SUMS` 校验清单、逐资产 `.sha256` sidecar、CycloneDX
 SBOM 与 Sigstore 构建来源证明（`gh attestation verify <file> -R turlamai/keyward`）。

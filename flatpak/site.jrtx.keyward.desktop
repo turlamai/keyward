@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Keyward
+Comment=Local vault for release-signing keys
+Exec=RivetHost
+Icon=site.jrtx.keyward
+Terminal=false
+Categories=Utility;Security;
+StartupWMClass=Keyward
