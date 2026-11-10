@@ -51,6 +51,23 @@ AGPL-3.0 许可的免费发布基础设施工具，不接商业激活。 提供 
 
 [安装、首次使用、隐私与备份恢复](docs/USER-GUIDE.zh-CN.md) · [English](docs/USER-GUIDE.md)
 
+## 安装
+
+从 [Releases](https://github.com/turlamai/keyward/releases/latest) 下载：
+
+| 平台 | 下载 | 更新 |
+|---|---|---|
+| macOS 14+（Apple Silicon 与 Intel） | `keyward-<version>-macos-<arch>.dmg`——`arm64` / `x64`，每种架构另附便携 `.zip` | 仅手动下载——密钥保险库不自我更新（[docs/UPDATE-SECURITY.md](docs/UPDATE-SECURITY.md)） |
+| Windows 10+ x64 | `keyward-<version>-windows-x64.msi` 安装器，或 `keyward-<version>-windows-x64.zip` 便携版 | 仅手动下载 |
+| Linux x64 / arm64 | `keyward-<version>-linux-x86_64.AppImage` / `keyward-<version>-linux-aarch64.AppImage`、`keyward-<version>-linux-<发行版架构>.deb`、`.rpm`，或便携版 `tar.gz` / `.zip` | 仅手动下载 |
+
+每个发布都带 `SHA256SUMS` 校验清单、逐资产 `.sha256` sidecar、CycloneDX
+SBOM 与 Sigstore 构建来源证明（`gh attestation verify <file> -R turlamai/keyward`）。
+
+macOS 版本仅为 ad-hoc 签名（未公证）：首次启动若被 Gatekeeper 拦截，
+右键应用选「打开」。发布二进制不带发布者代码签名——请以 `SHA256SUMS`
+或构建来源证明校验下载物，不要依赖安装包签名。
+
 ## 状态
 
 **v0.3.0 已发布**——三个桌面的安装包都在

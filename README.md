@@ -63,6 +63,25 @@ Free release-infrastructure tool under AGPL-3.0; no commercial activation. Deskt
 
 [Installation, first use, privacy, backup and recovery](docs/USER-GUIDE.md) · [简体中文](docs/USER-GUIDE.zh-CN.md)
 
+## Install
+
+Download from [Releases](https://github.com/turlamai/keyward/releases/latest):
+
+| Platform | Download | Updates |
+|---|---|---|
+| macOS 14+ (Apple Silicon & Intel) | `keyward-<version>-macos-<arch>.dmg` — `arm64` / `x64` — plus a portable `.zip` per arch | manual download only — a key vault does not update itself ([docs/UPDATE-SECURITY.md](docs/UPDATE-SECURITY.md)) |
+| Windows 10+ x64 | `keyward-<version>-windows-x64.msi` installer, or `keyward-<version>-windows-x64.zip` portable | manual download only |
+| Linux x64 / arm64 | `keyward-<version>-linux-x86_64.AppImage` / `keyward-<version>-linux-aarch64.AppImage`, `keyward-<version>-linux-<distro-arch>.deb`, `.rpm`, or the portable `tar.gz` / `.zip` | manual download only |
+
+Every release carries a `SHA256SUMS` manifest, per-asset `.sha256`
+sidecars, CycloneDX SBOMs and Sigstore build provenance
+(`gh attestation verify <file> -R turlamai/keyward`).
+
+macOS builds are ad-hoc signed (not notarized): on first launch,
+right-click the app and choose Open to clear the Gatekeeper prompt.
+Release binaries carry no publisher code signature — verify downloads
+against `SHA256SUMS` or the attestations, not the installer signature.
+
 ## Status
 
 **v0.3.0 is out** — installers for all three desktops on the
