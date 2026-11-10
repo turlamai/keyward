@@ -39,7 +39,7 @@ jobs:
           version: '9.3'
       - name: Install Rivet (pinned, matches the local release drills)
         run: raco pkg install --auto --no-docs crypto 'https://github.com/turlamai/rivet.git#${{ env.RIVET_PIN }}'
-      - name: Version preflight (rivet.rktd == tag == CHANGELOG)
+      - name: Version preflight (VERSION == rivet.rktd == tag == CHANGELOG)
         run: bash scripts/check-release-version.sh "${{ github.ref_name }}"
       # Release artifacts must never reuse compiled caches from another
       # commit (the v0.2.0 deb shipped an older engine than its tag);
@@ -90,7 +90,7 @@ jobs:
       - name: Install WiX
         shell: bash
         run: dotnet tool install --global wix --version 5.0.2
-      - name: Version preflight (rivet.rktd == tag == CHANGELOG)
+      - name: Version preflight (VERSION == rivet.rktd == tag == CHANGELOG)
         shell: bash
         run: bash scripts/check-release-version.sh "${{ github.ref_name }}"
       # Clean-build gate — see the macOS leg (issue #7).
@@ -157,7 +157,7 @@ jobs:
             libglib2.0-dev cmake ninja-build pkg-config file \
             rpm desktop-file-utils \
             xvfb dbus-x11 at-spi2-core python3-pyatspi
-      - name: Version preflight (rivet.rktd == tag == CHANGELOG)
+      - name: Version preflight (VERSION == rivet.rktd == tag == CHANGELOG)
         run: bash scripts/check-release-version.sh "${{ github.ref_name }}"
       # Clean-build gate — see the macOS leg (issue #7).
       - name: Clean-build gate (issue #7)
@@ -229,10 +229,10 @@ jobs:
           for a in macos-arm64 macos-x64 windows linux-x64 linux-arm64; do
             cp -R "artifacts/$a/." dist/
           done
-          # Keep-a-Changelog section: "## 0.1.0 - 2026-10-13" — match the
-          # version followed by a space (or end of line), not a bracketed
-          # form; a trailing " .0" suffix must not match "0.1".
-          awk -v header="## ${VERSION} " '
+          # Keep-a-Changelog section: "## [0.1.0] - 2026-10-13" — match the
+          # bracketed version followed by " - "; a trailing " .0" suffix
+          # must not match "[0.1]".
+          awk -v header="## [${VERSION}] - " '
             index($0, header) == 1 {on=1; next}
             on && /^## / {exit}
             on {print}
