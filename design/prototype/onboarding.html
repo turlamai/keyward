@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Keyward — No vault selected（首启空态原型）</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  /* ==== onboarding 页面专属 ==== */
+  .novault {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 14px; text-align: center; padding: 40px;
+  }
+  .novault .glyph { color: var(--accent); margin-bottom: 4px; }
+  .novault h1 { font-size: 17px; font-weight: 600; }
+  .novault .d1 { font-size: 13px; color: var(--ink-2); line-height: 1.55; }
+  .novault .d2 { font-size: 12px; color: var(--ink-3); line-height: 1.55; margin-bottom: 6px; }
+  .novault .kbhint { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-3); margin-top: 2px; }
+  .side-empty { font-size: 12px; color: var(--ink-3); padding: 6px 8px; }
+</style>
+</head>
+<body>
+  <div class="window" id="app">
+    <div class="titlebar">
+      <div class="t">Keyward</div>
+      <div class="sp"></div>
+      <button class="iconbtn" id="themeBtn" title="Toggle light/dark theme">◐</button>
+    </div>
+    <div class="body">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="mark"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61A5.5 5.5 0 1 1 3.61 19.39a5.5 5.5 0 0 1 7.78-7.78zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></div>
+          <div><div class="name">Keyward</div><div class="tag">release-signing key vault</div></div>
+        </div>
+        <div class="tiles">
+          <div class="tile"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg><span class="lb">Products</span><span class="n">0</span></div>
+          <div class="tile"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span class="lb">Paired</span><span class="n">0</span></div>
+          <div class="tile"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span class="lb">Attention</span><span class="n">0</span></div>
+          <div class="tile"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--neutral)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span class="lb">Snapshots</span><span class="n">0</span></div>
+        </div>
+        <div class="sect">Products<span class="sp"></span><span class="act" title="Deep Check (⌘R)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span></div>
+        <div class="side-empty">No vault connected</div>
+      </aside>
+      <section class="main">
+        <div class="novault">
+          <span class="glyph"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61A5.5 5.5 0 1 1 3.61 19.39a5.5 5.5 0 0 1 7.78-7.78zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></span>
+          <h1>No vault selected</h1>
+          <p class="d1">Point Keyward at your secrets.ini — any vault in the same<br>INI format works. The choice is remembered across launches.</p>
+          <p class="d2">The file and its snapshots stay plain text on disk —<br>Keyward is not OS-encrypted custody. Keep the synced folder trusted.</p>
+          <button class="btn primary" style="height:32px; padding:0 16px;">Choose Vault…</button>
+          <span class="kbhint"><kbd>⌘O</kbd> opens the vault picker from anywhere</span>
+        </div>
+        <div class="statusbar">
+          <span class="msg">Ready — choose a secrets.ini to begin</span>
+          <span class="sp"></span>
+          <span class="path mono">no vault selected</span>
+        </div>
+      </section>
+    </div>
+  </div>
+  <script>
+    document.getElementById('themeBtn').addEventListener('click', () => {
+      document.getElementById('app').classList.toggle('dark');
+    });
+  </script>
+</body>
+</html>

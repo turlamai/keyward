@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Keyward — Main view（英雄屏原型）</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  /* ==== main 页面专属 ==== */
+  .header .prodname { font-size: 22px; font-weight: 700; }
+  .header .actions { margin-left: auto; display: flex; gap: 14px; align-items: center; }
+  .header .actions .abtn { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: var(--accent); }
+  .header .actions .abtn.dim2 { color: var(--ink-2); }
+  .entries { display: flex; flex-direction: column; gap: 6px; }
+  .addbtn { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: var(--accent); }
+</style>
+</head>
+<body>
+  <div class="window" id="app">
+    <div class="titlebar">
+      <div class="t">Keyward — <span class="path">rivet</span></div>
+      <div class="sp"></div>
+      <button class="iconbtn" id="themeBtn" title="Toggle light/dark theme">◐</button>
+    </div>
+    <div class="body">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="mark"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61A5.5 5.5 0 1 1 3.61 19.39a5.5 5.5 0 0 1 7.78-7.78zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></div>
+          <div><div class="name">Keyward</div><div class="tag">release-signing key vault</div></div>
+        </div>
+        <div class="tiles">
+          <div class="tile"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg><span class="lb">Products</span><span class="n">4</span></div>
+          <div class="tile"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span class="lb">Paired</span><span class="n">2</span></div>
+          <div class="tile"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span class="lb">Attention</span><span class="n">1</span></div>
+          <div class="tile"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--neutral)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span class="lb">Snapshots</span><span class="n">12</span></div>
+        </div>
+        <div class="sect">Products<span class="sp"></span><span class="act" title="Deep Check (⌘R)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span></div>
+        <div class="prow active">
+          <span class="dot ok"></span>
+          <div><div class="nm">rivet</div><div class="cap mono">9f2c7ea1b4d0e5f3</div></div>
+          <span class="ct">8</span>
+        </div>
+        <div class="prow">
+          <span class="dot ok"></span>
+          <div><div class="nm">glaze</div><div class="cap mono">b418d02ce96a7710</div></div>
+          <span class="ct">8</span>
+        </div>
+        <div class="prow">
+          <span class="dot warn"></span>
+          <div><div class="nm">permit</div><div class="cap mono">empty:2</div></div>
+          <span class="ct">6</span>
+        </div>
+        <div class="prow">
+          <span class="dot neutral"></span>
+          <div><div class="nm">commerce</div><div class="cap mono">empty-section</div></div>
+          <span class="ct">0</span>
+        </div>
+      </aside>
+      <section class="main">
+        <div class="pane">
+          <div class="card header">
+            <div class="chead" style="margin-bottom:10px;">
+              <span class="prodname">rivet</span>
+              <div class="actions">
+                <span class="abtn" title="Deep Check (⌘R)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Deep Check</span>
+                <span class="abtn dim2" title="Snapshots (⌘L)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Snapshots</span>
+              </div>
+            </div>
+            <div class="chips">
+              <span class="chip"><span class="k">entries</span><span class="v">8</span></span>
+              <span class="chip"><span class="k">key id</span><span class="v mono">rivet-2026-03a</span></span>
+              <span class="chip"><span class="k">fingerprint</span><span class="v mono">9f2c7ea1b4d0e5f3</span></span>
+              <span class="schip"><i style="background:var(--ok)"></i><span style="color:var(--ok)">ok</span></span>
+            </div>
+            <div class="chips" style="margin-top:8px;">
+              <span class="chip"><span class="k">kind</span><span class="v">ed25519</span></span>
+              <span class="chip ok"><span class="k">paired</span><span class="v">yes</span></span>
+              <span class="chip ok"><span class="k">check</span><span class="v">ok</span></span>
+            </div>
+          </div>
+          <div class="card">
+            <div class="chead">
+              <h2>Rotation</h2><span class="sp"></span>
+              <span class="btn warn-quiet">Discard Staged Key…</span>
+              <span class="btn warn-quiet" title="Phase 2: make the staged key the signing key">Promote…</span>
+            </div>
+            <div class="chips">
+              <span class="chip"><span class="k">next key id</span><span class="v mono">rivet-2026-11b</span></span>
+              <span class="chip"><span class="k">next fingerprint</span><span class="v mono">5ae3c9d14b80f261</span></span>
+              <span class="chip ok"><span class="k">paired</span><span class="v">yes</span></span>
+            </div>
+            <p class="note" style="margin-top:10px;">Phase 1 in progress: copy the staged public anchors below (Export menu) into app source, ship a release signed with the old key, then Promote and swap the CI secret.</p>
+          </div>
+          <div class="card">
+            <div class="chead"><h2>Entries</h2><span class="sp"></span><span class="addbtn">＋ Add</span></div>
+            <div class="entries">
+              <!-- 值永不上屏：行内只有 mono 名 + 用途提示；Copy 是值的唯一出口 -->
+              <div class="entry">
+                <span class="lock"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+                <div style="min-width:0;"><div class="nm mono">UPDATE_ED25519_PRIVATE_KEY_B64</div><div class="pp">Consumed by the release workflow (CI manifest signing)</div></div>
+                <span class="sp"></span><span class="copy">⧉ Copy</span><span class="menu">⋯</span>
+              </div>
+              <div class="entry" style="background:var(--hover); border-color:color-mix(in srgb, var(--accent) 45%, transparent);">
+                <span class="lock"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+                <div style="min-width:0;"><div class="nm mono">UPDATE_ED25519_PUBLIC_KEY_SPKI_B64</div><div class="pp">Pasted into the Racket-side updater (SPKI form)</div></div>
+                <span class="sp"></span><span class="copy" style="display:inline-flex;">⧉ Copy</span><span class="menu">⋯</span>
+              </div>
+              <div class="entry">
+                <span class="lock"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+                <div style="min-width:0;"><div class="nm mono">UPDATE_ED25519_PUBLIC_KEY_RAW_TAIL32_B64</div><div class="pp">Pasted into the macOS Swift host UpdateService (raw 32-byte form)</div></div>
+                <span class="sp"></span><span class="copy">⧉ Copy</span><span class="menu">⋯</span>
+              </div>
+              <div class="entry">
+                <span class="lock"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+                <div style="min-width:0;"><div class="nm mono">RIVET_UPDATE_KEY_ID</div><div class="pp">Written into the signed update manifest</div></div>
+                <span class="sp"></span><span class="copy">⧉ Copy</span><span class="menu">⋯</span>
+              </div>
+              <div class="entry">
+                <span class="lock"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+                <div style="min-width:0;"><div class="nm mono">UPDATE_ED25519_NEXT_PRIVATE_KEY_B64</div><div class="pp">Staged next key — swap it into CI after the phase-1 release ships (Promote)</div></div>
+                <span class="sp"></span><span class="copy">⧉ Copy</span><span class="menu">⋯</span>
+              </div>
+              <div class="entry">
+                <span class="lock"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+                <div style="min-width:0;"><div class="nm mono">LICENSE_ED25519_PRIVATE_KEY_B64</div><div class="pp">Commercial signing — different lifecycle from update keys</div></div>
+                <span class="sp"></span><span class="copy">⧉ Copy</span><span class="menu">⋯</span>
+              </div>
+              <div class="entry empty-row">
+                <span class="lock"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.9-1"/></svg></span>
+                <div style="min-width:0;"><div class="nm mono">UPDATE_RSA_PUBLIC_KEY_PEM</div><div class="pp">No known consumer — confirm what reads it before deleting</div></div>
+                <span class="st">empty</span><span class="sp"></span><span class="menu">⋯</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="statusbar">
+          <!-- 暴露必披露：复制即宣告 + 30 s 倒计时 -->
+          <span class="msg disclosure">Copied UPDATE_ED25519_PUBLIC_KEY_SPKI_B64 — any app can read the clipboard; auto-clears in <span id="cd">30</span> s</span>
+          <span class="sp"></span>
+          <span class="path mono">~/Sync/Keys/secrets.ini</span>
+        </div>
+      </section>
+    </div>
+  </div>
+  <script>
+    document.getElementById('themeBtn').addEventListener('click', () => {
+      document.getElementById('app').classList.toggle('dark');
+    });
+    // 30 s 自动清除倒计时演示（反馈及时：后台清除可感知）
+    let s = 30;
+    setInterval(() => { s = s > 0 ? s - 1 : 30; document.getElementById('cd').textContent = s; }, 1000);
+  </script>
+</body>
+</html>
