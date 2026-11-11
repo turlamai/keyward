@@ -46,9 +46,10 @@ jobs:
       # clean forces the whole backend to recompile from this checkout.
       - name: Clean-build gate (issue #7)
         run: raco rivet clean
-      # DMG (human installer) + portable zip + launch smoke, no update
-      # feed: keyward is a key vault and does not update itself yet —
-      # the release ships with plain SHA256SUMS for integrity.
+      # DMG (human installer) + portable zip + launch smoke. rivet's own
+      # per-platform update emission stays off: keyward signs ONE merged
+      # update feed in the publish job (payback pattern) — the app itself
+      # stays manual-update-only until the issue #15 ladder lands.
       - name: Release (DMG + portable zip)
         run: raco rivet release --without-updates --development
       - name: Family naming + checksums
@@ -97,9 +98,8 @@ jobs:
       - name: Clean-build gate (issue #7)
         shell: pwsh
         run: raco rivet clean
-      # MSI (human installer) + portable zip + launch smoke, no update
-      # feed: keyward is a key vault and does not update itself —
-      # same decision as the macOS leg.
+      # MSI (human installer) + portable zip + launch smoke — same merged
+      # feed policy as the macOS leg (signed in the publish job).
       - name: Release (MSI + portable zip)
         shell: pwsh
         run: raco rivet release --without-updates --development
@@ -165,7 +165,7 @@ jobs:
       # tar.gz (portable) + deb + rpm + AppImage + portable zip + SBOM,
       # launch smoke included. The AppImage carries its own GTK4 dependency
       # closure; APPIMAGE_EXTRACT_AND_RUN lets appimagetool run on the
-      # runner.
+      # runner. AppImage entries feed the signed update feed (publish job).
       - name: Release (tar.gz + deb + rpm + AppImage + portable zip)
         env:
           APPIMAGE_EXTRACT_AND_RUN: '1'
@@ -253,12 +253,9 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
-      - name: Gather + publish
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Gather artifacts
         run: |
           set -euo pipefail
-          VERSION="${GITHUB_REF_NAME#v}"
           mkdir -p dist
           # cp -R merges: release legs can leave a dist/keyward-linux-<arch>/
           # staging bundle in the artifacts, and a plain mv dies on the
@@ -266,6 +263,30 @@ jobs:
           for a in macos-arm64 macos-x64 windows linux-x64 linux-arm64; do
             cp -R "artifacts/$a/." dist/
           done
+      - name: Sign the update feed
+        env:
+          UPDATE_ED25519_PRIVATE_KEY_B64: ${{ secrets.UPDATE_ED25519_PRIVATE_KEY_B64 }}
+        run: |
+          set -euo pipefail
+          # docs/UPDATE-SECURITY.md release-signing prerequisite: fail closed
+          # without the correct signing secret — a release never ships
+          # without its signed feed (docs/UPDATE-SECURITY.md, issue #15).
+          if [[ -z "${UPDATE_ED25519_PRIVATE_KEY_B64:-}" ]]; then
+            echo "::error::UPDATE_ED25519_PRIVATE_KEY_B64 is missing; refusing to publish without a signed update feed" >&2
+            exit 1
+          fi
+          KEY_DER="$RUNNER_TEMP/update-ed25519-private.der"
+          printf '%s' "$UPDATE_ED25519_PRIVATE_KEY_B64" | base64 -d > "$KEY_DER"
+          python3 scripts/check-update-signing-key.py
+          bash scripts/make-update-manifest.sh "$GITHUB_REF_NAME" dist "$KEY_DER"
+          rm -f "$KEY_DER"
+          test -s dist/update-manifest.json
+      - name: Gather + publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
           # Keep-a-Changelog section: "## [0.1.0] - 2026-10-13" — match the
           # bracketed version followed by " - "; a trailing " .0" suffix
           # must not match "[0.1]".
@@ -300,13 +321,19 @@ jobs:
             test -s "$rpm" || { echo "::error::Missing RPM $arch"; exit 1; }
             cp "$rpm" public/
           done
+          # The signed update feed rides every release (docs/UPDATE-SECURITY.md
+          # release-signing prerequisite); it is not a keyward-* file so it
+          # joins the inventory explicitly.
+          test -s dist/update-manifest.json || { echo "::error::Missing update-manifest.json"; exit 1; }
+          cp dist/update-manifest.json public/
           # Rebuild the public checksum inventory after staging, so the
           # published SBOMs are covered too (the CI sidecars cover binaries).
           # RPM revision is independent of app SemVer.
-          # 17 installers/archives/SBOMs + 2 RPMs + 2 Flatpak bundles.
+          # 17 installers/archives/SBOMs + 2 RPMs + 2 Flatpak bundles
+          # + 1 signed update feed.
           test "$(find public -maxdepth 1 -type f -name 'keyward-*' | wc -l)" -eq 21
-          (cd public && sha256sum keyward-* | LC_ALL=C sort -k2 > SHA256SUMS && sha256sum -c SHA256SUMS)
-          test "$(wc -l < public/SHA256SUMS)" -eq 21
+          (cd public && sha256sum keyward-* update-manifest.json | LC_ALL=C sort -k2 > SHA256SUMS && sha256sum -c SHA256SUMS)
+          test "$(wc -l < public/SHA256SUMS)" -eq 22
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
             gh release edit "$GITHUB_REF_NAME" --title "Keyward $VERSION" --notes-file /tmp/notes.md
             gh release upload "$GITHUB_REF_NAME" public/* --clobber
