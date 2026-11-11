@@ -56,3 +56,19 @@ Tokens 1:1 提取自 `macos-host/Sources/RivetHost/Theme.swift`（三平台共�
 4. 亮暗主题成对设计（ThemeState 双主题均验证态），不存在只有暗态的界面。
 5. 破坏性操作（Generate / Stage / Promote / Discard / Delete）必经确认对话框且 Return 落 Cancel；每次变更先快照，对话框文案必须说明后果与可恢复路径。
 6. 键盘可达：⌘O 选择保险库、⌘R Deep Check、⌘L 快照；对话框安全默认；鼠标不可用时可完整操作。
+
+
+## 平台映射与差异声明（预钉 · 宿主实现时升级为落点表）
+
+统一层（三平台必须一致，`design/prototype/` 原型已锁定）：信息架构、核心流程、快捷键语义、
+语义色与层级词汇。因地制宜层（按平台惯例落地，不预画像素）：
+
+| 维度 | macOS | Windows | Linux |
+|---|---|---|---|
+| 修饰键 | ⌘ | Ctrl | Ctrl |
+| 命令入口 | 原生菜单栏 | 菜单栏/命令行内 | 菜单栏 |
+| 字体 | 系统栈 + PingFang SC | 系统栈 + Microsoft YaHei | 系统栈 + Noto Sans CJK |
+| 原生控件 | SwiftUI 控件 | WinUI 3 控件 | GTK4 控件 |
+
+差异声明纪律：宿主特例必须先写进本节才能实现；未声明的宿主差异按违约处理
+（案例：taskly 漂移台账 D8）。
