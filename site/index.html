@@ -5,17 +5,19 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Keyward — 自更新应用的签名钥保险库</title>
-    <meta name="description" content="Keyward: 私钥签更新清单、公钥嵌在已装应用里验签——Sparkle、Tauri、electron-updater 全是这一套，缺的是私钥的日常托管。值永不显示只进剪贴板，每次改动先快照，深度校验，生成即入库。Rivet 线——Racket 引擎驱动原生壳。">
+    <meta name="description" content="Keyward: 私钥签更新清单、公钥嵌在已装应用里验签——Sparkle、Tauri、electron-updater 全是这一套，缺的是私钥的日常托管。值永不显示只进剪贴板，每次写入先快照，两阶段轮换防错，散钥扫描只报指纹。Rivet 线——Racket 引擎驱动三平台原生壳。">
     <link rel="canonical" href="https://keyward.jrtx.site/">
     <meta name="theme-color" content="#D97757">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Keyward">
     <meta property="og:title" content="Keyward — a proper home for your update-signing keys">
-    <meta property="og:description" content="Local vault for release-signing keys: values never displayed, copy-only, snapshots before every write, one-click deep checks. Zero network code — AGPL-3.0.">
+    <meta property="og:description" content="Local vault for release-signing keys: values never displayed, copy-only, snapshot on every write, two-phase rotation, stray-key scan that reports fingerprints. Zero network code — AGPL-3.0.">
     <meta property="og:url" content="https://keyward.jrtx.site/">
-    <meta name="twitter:card" content="summary">
+    <meta property="og:image" content="https://keyward.jrtx.site/img/keyward-main-window.png">
+    <meta property="og:image:alt" content="The Keyward window at first launch: summary tiles and an empty product list beside the vault picker.">
+    <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Keyward — a proper home for your update-signing keys">
-    <meta name="twitter:description" content="Local vault for release-signing keys. Values never displayed, snapshot on every write, zero network code.">
+    <meta name="twitter:description" content="Local vault for release-signing keys. Values never displayed, snapshot on every write, two-phase rotation, stray-key scan.">
 
     <!-- Theme + language pre-paint: no flash before the stylesheet paints.
          Storage keys are the site's historical keys (keyward-theme /
@@ -86,7 +88,7 @@
             <div class="kit-container">
                 <span class="kit-eyebrow" data-i18n="kicker">本地保险库 · 值不显示 · 零网络</span>
                 <h1 data-i18n="hero-title">给你的更新签名钥，一个像样的家。</h1>
-                <p class="kit-text-2 kw-availability" data-i18n="hero.availability">开发预览。AGPL-3.0 许可的免费发布基础设施工具，不接商业激活。</p>
+                <p class="kit-text-2 kw-availability" data-i18n="hero.availability">v0.3.0 已发布。macOS / Windows / Linux 三平台原生应用，源码以 AGPL-3.0 许可开放。</p>
                 <p class="kit-lead" data-i18n="hero-lede">桌面应用的在线更新全靠同一套信任模型：私钥签更新清单，公钥嵌在已装应用里验签——Sparkle、Tauri、electron-updater、WinSparkle 都是它。可私钥的日常托管没人替你管：一次泄漏、一份散件、一次误删，断的就是整条更新线。Keyward 把这件事变成点按钮。</p>
                 <div class="kit-btn-row">
                     <div class="kit-dl">
@@ -106,39 +108,35 @@
                     </div>
                     <a class="kit-btn kit-btn--secondary" href="https://github.com/turlamai/keyward" data-i18n="hero.source">查看源码</a>
                 </div>
-                <p class="kit-hero-meta"><span class="kit-badge" data-i18n="hero.badge">开发预览 · AGPL-3.0 · macOS / Windows / Linux</span></p>
+                <p class="kit-hero-meta"><span class="kit-badge" data-i18n="hero.badge">v0.3.0 · AGPL-3.0 · macOS / Windows / Linux</span></p>
             </div>
         </section>
 
-        <!-- Workflow showcase -->
-        <section class="kit-section kit-section--alt kw-showcase" id="visual-showcase" aria-label="Product workflow concept">
+        <!-- Features shipped in v0.3.0 -->
+        <section class="kit-section kit-section--alt kw-showcase" id="visual-showcase" aria-label="Keyward features shipped in v0.3.0">
             <div class="kit-container">
                 <div class="kw-vs-intro">
-                    <span class="kw-vs-label">PRODUCT IN CONTEXT · 产品如何工作</span>
-                    <h2 class="kit-h2" style="margin-inline: auto;" data-i18n="vs.title">发布签名钥管理需要清晰，而不是神秘。</h2>
-                    <p class="kit-lead" style="margin-inline: auto;" data-i18n="vs.lead">本地记录密钥状态、检查与快照；当前是明文 INI vault，不是 HSM 或加密密钥链。</p>
+                    <span class="kw-vs-label">SHIPPED IN v0.3.0 · 已随 v0.3.0 交付</span>
+                    <h2 class="kit-h2" style="margin-inline: auto;" data-i18n="vs.title">保密即界面，状态即安全。</h2>
+                    <p class="kit-lead" style="margin-inline: auto;" data-i18n="vs.lead">四个界面钉死日常体验：概览、轮换、快照、散钥扫描——值不上屏，暴露必披露，破坏必确认。</p>
                 </div>
-                <div class="kw-vs-frame">
-                    <div class="kw-vs-art">
-                        <div class="kw-mini-board">
-                            <div class="kw-mini-title">SOURCE / INPUT</div>
-                            <div class="kw-mini-task"><span class="kw-ring" aria-hidden="true"></span><span>Key records</span></div>
-                            <div class="kw-mini-task"><span class="kw-ring" aria-hidden="true"></span><span>Issuer / public key</span></div>
-                            <div class="kw-mini-task"><span class="kw-ring" aria-hidden="true"></span><span>Local filesystem</span></div>
-                        </div>
-                        <div class="kw-mini-board">
-                            <div class="kw-mini-title">RESULT / OUTPUT</div>
-                            <div class="kw-mini-task"><span class="kw-ring" aria-hidden="true"></span><span>Per-key checks</span></div>
-                            <div class="kw-mini-task"><span class="kw-ring" aria-hidden="true"></span><span>Status summary</span></div>
-                            <div class="kw-mini-task"><span class="kw-ring" aria-hidden="true"></span><span>Snapshots</span></div>
-                        </div>
+                <div class="kit-grid kit-grid--2" style="margin-top: 36px;">
+                    <div class="kit-card">
+                        <h3 data-i18n="vs.f1t">状态点概览</h3>
+                        <p data-i18n="vs.f1b">每个产品、每把钥匙独立判定：配对、注意、中性、空节四态贯穿侧栏圆点与徽标——一个坏 key 不会被同节的好 key 掩盖，多 key 节按名字逐个标注指纹。</p>
                     </div>
-                    <div class="kw-vs-stage">
-                        <div class="kw-vs-step"><span class="kw-vs-glyph" aria-hidden="true">▤</span><b data-i18n="vs.s1t">整理记录</b><small data-i18n="vs.s1b">建立本地密钥清单</small></div>
-                        <div class="kw-vs-step"><span class="kw-vs-glyph" aria-hidden="true">✓</span><b data-i18n="vs.s2t">检查状态</b><small data-i18n="vs.s2b">核对更新签名材料</small></div>
-                        <div class="kw-vs-step"><span class="kw-vs-glyph" aria-hidden="true">⇩</span><b data-i18n="vs.s3t">保留快照</b><small data-i18n="vs.s3b">按现有流程备份和审核</small></div>
+                    <div class="kit-card">
+                        <h3 data-i18n="vs.f2t">两阶段轮换，Promote 防错</h3>
+                        <p data-i18n="vs.f2b">Stage 把新钥写进 NEXT 条目，旧钥继续发布不受影响；Promote 由配对结果把关，配对不绿按钮不亮。丢弃也要过确认对话框，Return 永远落在取消。</p>
                     </div>
-                    <p class="kw-vs-caption" data-i18n="vs.caption">概念工作流程图，非当前产品截图；以实际发布版本和用户手册为准。</p>
+                    <div class="kit-card">
+                        <h3 data-i18n="vs.f3t">快照先行，一键恢复</h3>
+                        <p data-i18n="vs.f3b">生成、导入、修改、删除，每次写入先落整库快照，快照跟库一起进同步盘；出事时 Restore 就是一次点击，每台设备上都有底。</p>
+                    </div>
+                    <div class="kit-card">
+                        <h3 data-i18n="vs.f4t">散钥扫描，只报指纹</h3>
+                        <p data-i18n="vs.f4b">扫工作树找未收编的私钥材料，路径 / 行号 / 类型 / 指纹逐行列出——PEM 头、base64-DER、Sparkle 种子都能认，值永不显示。</p>
+                    </div>
                 </div>
             </div>
         </section>
@@ -173,20 +171,20 @@
                 <h2 class="kit-h2" data-i18n="principles-title">设计原则</h2>
                 <div class="kit-grid kit-grid--2" style="margin-top: 44px;">
                     <div class="kit-card">
-                        <h3 data-i18n="p1-title">值永不显示</h3>
-                        <p data-i18n="p1-body">私钥只有一条路离开引擎：复制到剪贴板。列表和体检结果只出现名字、计数与指纹——日志里打错一个结构体都是事故。</p>
+                        <h3 data-i18n="p1-title">保密即界面</h3>
+                        <p data-i18n="p1-body">界面上不存在「值」：列表与体检结果只载名字、计数与指纹——SHA-256 指纹取前 16 位 hex，是唯一允许的派生标识。值唯一的出口是显式复制。</p>
                     </div>
                     <div class="kit-card">
-                        <h3 data-i18n="p2-title">每次写入先快照</h3>
-                        <p data-i18n="p2-body">任何改动先把整库快照进同步盘的 .history——快照跟着库一起同步，坏写入一次恢复，每个设备上都有底。</p>
+                        <h3 data-i18n="p2-title">暴露必披露</h3>
+                        <p data-i18n="p2-body">每次复制当场宣告「剪贴板任何应用可读」，30 秒后自动清除，后台清除同样播报，永不静默。Copy as… 导出 Sparkle / minisign / Tauri 格式走同一套披露。</p>
                     </div>
                     <div class="kit-card">
-                        <h3 data-i18n="p3-title">明文同步，预算给全盘加密</h3>
-                        <p data-i18n="p3-body">库就是你同步盘里的明文 INI，信任设备间直连；引擎零网络代码，密钥不出本机。防失窃交给 FileVault / BitLocker。</p>
+                        <h3 data-i18n="p3-title">防错一致</h3>
+                        <p data-i18n="p3-body">生成、暂存、晋升、丢弃、删除一律过确认对话框：安全动作拿视觉主位，Return 永远落在取消，破坏性动作必须显式点击；删除文案先讲条目用途，再讲快照可恢复。</p>
                     </div>
                     <div class="kit-card">
-                        <h3 data-i18n="p4-title">生成即入库</h3>
-                        <p data-i18n="p4-body">应用内生成钥匙直接写进库——连瞬时散件都不存在。值强制单行，坏粘贴以行号暴露；格式兼容你现有的库，零迁移。</p>
+                        <h3 data-i18n="p4-title">明文可逃生</h3>
+                        <p data-i18n="p4-body">库是同步盘里的明文 INI——格式稳定、随时离开，Keyward 是纪律层不是锁。引擎零网络代码，密钥不出本机；防失窃交给 FileVault / BitLocker。</p>
                     </div>
                 </div>
             </div>
@@ -207,7 +205,7 @@
                     </div>
                     <div class="kit-step">
                         <h3 data-i18n="s3-title">改即有底</h3>
-                        <p data-i18n="s3-body">生成、导入、修改、删除，每一步都先落快照；要回滚，恢复就是一次点击。值想用时复制进剪贴板，永不回显。</p>
+                        <p data-i18n="s3-body">生成、导入、修改、删除，每一步都先落快照；应用内生成直接写进库，连瞬时散件都不存在。要回滚，恢复就是一次点击；值想用时复制进剪贴板，永不回显。</p>
                     </div>
                 </div>
             </div>
@@ -232,7 +230,7 @@
                     </div>
                     <div class="kit-card">
                         <h3 data-i18n="dl-win-lin-title">Windows（x64）/ Linux</h3>
-                        <p data-i18n="dl-win-lin">WinUI 3 与 GTK4 原生壳已随 v0.2.0 交付：Windows 为 MSI + 便携 zip，Linux 为 x64/arm64 的 deb、rpm、AppImage、tar.gz 与便携 zip，随附 SHA256SUMS 校验文件与 SBOM。</p>
+                        <p data-i18n="dl-win-lin">Windows（WinUI 3 原生壳）为 MSI + 便携 zip；Linux（GTK4 原生壳）为 x64 / arm64 的 deb、rpm、AppImage、tar.gz 与便携 zip。均随附 SHA256SUMS、逐文件 .sha256 与 SBOM。</p>
                         <p style="margin-top: 16px;"><a class="kit-btn kit-btn--secondary" data-kit-dl="win" href="https://github.com/turlamai/keyward/releases/latest" data-i18n="dl-win-go">下载 MSI →</a></p>
                         <p class="kit-text-3 kw-dl-links">
                             <a href="https://github.com/turlamai/keyward/releases/latest">Linux x64 deb</a> ·
@@ -249,21 +247,21 @@
                             <span class="kit-chip">Windows</span>
                             <span class="kit-chip">Linux</span>
                         </p>
-                        <p class="kit-text-2" style="margin-top: 14px;" data-i18n="dl-platforms-body">v0.2.0 已发布：macOS、Windows、Linux 三平台安装包全部上线。这是开发者工具，不做移动端。</p>
+                        <p class="kit-text-2" style="margin-top: 14px;" data-i18n="dl-platforms-body">v0.3.0 已发布：三平台安装包与校验文件都在 Releases 页。这是开发者工具，不做移动端。</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Roadmap -->
+        <!-- Shipped -->
         <section class="kit-section" id="roadmap">
             <div class="kit-container">
-                <h2 class="kit-h2" data-i18n="roadmap-title">路线图</h2>
+                <h2 class="kit-h2" data-i18n="roadmap-title">已交付</h2>
                 <ul class="kw-roadmap">
-                    <li><strong>M1</strong><span data-i18n="rm1">Windows / Linux 原生壳 + 首个发布（三平台安装包）</span></li>
-                    <li><strong>M2</strong><span data-i18n="rm2">轮换工作流：generate-next → promote 两阶段，照 family runbook 走</span></li>
-                    <li><strong>M3</strong><span data-i18n="rm3">散件扫描：扫工作树找未收编的 PEM/DER，泄漏面主动暴露</span></li>
-                    <li><strong>M4</strong><span data-i18n="rm4">生态兼容：Sparkle / Tauri updater / electron-updater 钥格式导入导出</span></li>
+                    <li><strong>v0.2.0</strong><span data-i18n="rm1">Windows（WinUI 3）/ Linux（GTK4）原生壳交付，三平台安装包全矩阵</span></li>
+                    <li><strong>v0.3.0</strong><span data-i18n="rm2">两阶段轮换：Stage → Promote，配对不绿不能晋升</span></li>
+                    <li><strong>v0.3.0</strong><span data-i18n="rm3">散钥扫描：路径 / 行号 / 指纹，值永不显示</span></li>
+                    <li><strong>v0.3.0</strong><span data-i18n="rm4">更新器格式互通：Sparkle / minisign / Tauri 导入导出，剪贴板直达</span></li>
                 </ul>
             </div>
         </section>
@@ -273,7 +271,7 @@
             <div class="kit-container">
                 <span class="kit-kicker" data-i18n="start.kicker">开始使用</span>
                 <h2 class="kit-h2" data-i18n="start.title">从一次有效使用开始。</h2>
-                <p class="kit-lead" style="margin-top: 18px;"><span class="kit-badge" data-i18n="start.status">AGPL-3.0 许可的免费发布基础设施工具，不接商业激活。</span> <span data-i18n="start.platforms">提供 macOS、Windows、Linux 桌面预览。连接真实发布凭据前，先使用可丢弃的合成密钥库。</span></p>
+                <p class="kit-lead" style="margin-top: 18px;"><span class="kit-badge" data-i18n="start.status">v0.3.0 已发布，三平台原生应用；源码以 AGPL-3.0 许可开放。</span> <span data-i18n="start.platforms">macOS、Windows、Linux 桌面版均可下载。连接真实发布凭据前，先用可丢弃的合成密钥库练手。</span></p>
                 <div class="kit-steps" style="margin-top: 44px;">
                     <div class="kit-step">
                         <p data-i18n="start.s1.body">建立临时测试库；查看条目名称和指纹，不展示私钥值。</p>
@@ -285,7 +283,7 @@
                         <p data-i18n="start.s3.body">先用测试密钥演练备份和两阶段轮换，再修改已安装应用信任的发布密钥。</p>
                     </div>
                 </div>
-                <p class="kit-text-2" style="margin-top: 30px; max-width: 74ch;"><span data-i18n="start.limits-a">多密钥校验已由 </span><a href="https://github.com/turlamai/keyward/issues/4">#4</a><span data-i18n="start.limits-b"> 修正。备份恢复、孤立条目检测、剪贴板暴露与打包发布证据仍需按 </span><a href="https://github.com/turlamai/keyward/issues/3">#3</a><span data-i18n="start.limits-c"> 推进；不构成安全认证。</span></p>
+                <p class="kit-text-2" style="margin-top: 30px; max-width: 74ch;"><span data-i18n="start.limits">已交付的能力以 Releases 页与 CHANGELOG 中的发布证据为准；本站内容是产品介绍，不构成安全认证。</span></p>
                 <div class="kw-start-links">
                     <a href="https://github.com/turlamai/keyward/blob/main/docs/USER-GUIDE.zh-CN.md" data-en-href="https://github.com/turlamai/keyward/blob/main/docs/USER-GUIDE.md" data-i18n="start.guide">安装、隐私与恢复</a>
                     <a href="https://github.com/turlamai/keyward/issues" data-i18n="start.help">反馈与帮助</a>
@@ -342,19 +340,23 @@
             "nav.why": "为什么需要", "nav.principles": "设计原则", "nav.start": "三步开始", "nav.download": "下载", "nav.guide": "手册", "nav.github": "GitHub",
             "kicker": "本地保险库 · 值不显示 · 零网络",
             "hero-title": "给你的更新签名钥，一个像样的家。",
-            "hero.availability": "开发预览。AGPL-3.0 许可的免费发布基础设施工具，不接商业激活。",
+            "hero.availability": "v0.3.0 已发布。macOS / Windows / Linux 三平台原生应用，源码以 AGPL-3.0 许可开放。",
             "hero-lede": "桌面应用的在线更新全靠同一套信任模型：私钥签更新清单，公钥嵌在已装应用里验签——Sparkle、Tauri、electron-updater、WinSparkle 都是它。可私钥的日常托管没人替你管：一次泄漏、一份散件、一次误删，断的就是整条更新线。Keyward 把这件事变成点按钮。",
-            "hero.badge": "开发预览 · AGPL-3.0 · macOS / Windows / Linux",
+            "hero.badge": "v0.3.0 · AGPL-3.0 · macOS / Windows / Linux",
             "hero.source": "查看源码",
             "dl.generic": "获取 Keyward",
             "dl.mac": "macOS 版", "dl.win": "Windows 版", "dl.linux": "Linux 版",
             "dl.note": "当前平台请前往 Releases 页面选取对应安装包。",
-            "vs.title": "发布签名钥管理需要清晰，而不是神秘。",
-            "vs.lead": "本地记录密钥状态、检查与快照；当前是明文 INI vault，不是 HSM 或加密密钥链。",
-            "vs.s1t": "整理记录", "vs.s1b": "建立本地密钥清单",
-            "vs.s2t": "检查状态", "vs.s2b": "核对更新签名材料",
-            "vs.s3t": "保留快照", "vs.s3b": "按现有流程备份和审核",
-            "vs.caption": "概念工作流程图，非当前产品截图；以实际发布版本和用户手册为准。",
+            "vs.title": "保密即界面，状态即安全。",
+            "vs.lead": "四个界面钉死日常体验：概览、轮换、快照、散钥扫描——值不上屏，暴露必披露，破坏必确认。",
+            "vs.f1t": "状态点概览",
+            "vs.f1b": "每个产品、每把钥匙独立判定：配对、注意、中性、空节四态贯穿侧栏圆点与徽标——一个坏 key 不会被同节的好 key 掩盖，多 key 节按名字逐个标注指纹。",
+            "vs.f2t": "两阶段轮换，Promote 防错",
+            "vs.f2b": "Stage 把新钥写进 NEXT 条目，旧钥继续发布不受影响；Promote 由配对结果把关，配对不绿按钮不亮。丢弃也要过确认对话框，Return 永远落在取消。",
+            "vs.f3t": "快照先行，一键恢复",
+            "vs.f3b": "生成、导入、修改、删除，每次写入先落整库快照，快照跟库一起进同步盘；出事时 Restore 就是一次点击，每台设备上都有底。",
+            "vs.f4t": "散钥扫描，只报指纹",
+            "vs.f4b": "扫工作树找未收编的私钥材料，路径 / 行号 / 类型 / 指纹逐行列出——PEM 头、base64-DER、Sparkle 种子都能认，值永不显示。",
             "why-title": "为什么需要",
             "w1-title": "泄漏比你想的近",
             "w1-body": "一条调试命令、一段贴进日志的 PEM 正文，私钥就进了会话记录——泄漏从来不是黑客剧本，是日常手滑。我们自家两周内就发生过两次。",
@@ -363,21 +365,21 @@
             "w3-title": "丢钥就是全线断更",
             "w3-body": "私钥只活在 CI secret 里时，一次误删、一次坏写入，所有已装用户再也收不到任何更新。备份不该是\"记得复制一下\"。",
             "principles-title": "设计原则",
-            "p1-title": "值永不显示",
-            "p1-body": "私钥只有一条路离开引擎：复制到剪贴板。列表和体检结果只出现名字、计数与指纹——日志里打错一个结构体都是事故。",
-            "p2-title": "每次写入先快照",
-            "p2-body": "任何改动先把整库快照进同步盘的 .history——快照跟着库一起同步，坏写入一次恢复，每个设备上都有底。",
-            "p3-title": "明文同步，预算给全盘加密",
-            "p3-body": "库就是你同步盘里的明文 INI，信任设备间直连；引擎零网络代码，密钥不出本机。防失窃交给 FileVault / BitLocker。",
-            "p4-title": "生成即入库",
-            "p4-body": "应用内生成钥匙直接写进库——连瞬时散件都不存在。值强制单行，坏粘贴以行号暴露；格式兼容你现有的库，零迁移。",
+            "p1-title": "保密即界面",
+            "p1-body": "界面上不存在「值」：列表与体检结果只载名字、计数与指纹——SHA-256 指纹取前 16 位 hex，是唯一允许的派生标识。值唯一的出口是显式复制。",
+            "p2-title": "暴露必披露",
+            "p2-body": "每次复制当场宣告「剪贴板任何应用可读」，30 秒后自动清除，后台清除同样播报，永不静默。Copy as… 导出 Sparkle / minisign / Tauri 格式走同一套披露。",
+            "p3-title": "防错一致",
+            "p3-body": "生成、暂存、晋升、丢弃、删除一律过确认对话框：安全动作拿视觉主位，Return 永远落在取消，破坏性动作必须显式点击；删除文案先讲条目用途，再讲快照可恢复。",
+            "p4-title": "明文可逃生",
+            "p4-body": "库是同步盘里的明文 INI——格式稳定、随时离开，Keyward 是纪律层不是锁。引擎零网络代码，密钥不出本机；防失窃交给 FileVault / BitLocker。",
             "start-title": "三步开始",
             "s1-title": "指向你的库",
             "s1-body": "首次启动选择你的钥匙库（任何同格式的 INI 都行），选择会被记住——不新建格式、不强迫迁移，你的同步盘继续是唯一事实源。",
             "s2-title": "Deep Check 一键体检",
             "s2-body": "解析每把私钥、派生公钥、算指纹、和库内公钥配对——过去一下午的手工 openssl，现在一屏读完。",
             "s3-title": "改即有底",
-            "s3-body": "生成、导入、修改、删除，每一步都先落快照；要回滚，恢复就是一次点击。值想用时复制进剪贴板，永不回显。",
+            "s3-body": "生成、导入、修改、删除，每一步都先落快照；应用内生成直接写进库，连瞬时散件都不存在。要回滚，恢复就是一次点击；值想用时复制进剪贴板，永不回显。",
             "download-kicker": "安装包",
             "download-title": "下载",
             "dl-mac-title": "macOS（Apple Silicon / Intel）",
@@ -385,25 +387,23 @@
             "dl-mac-go": "下载 DMG →",
             "dl-all": "全部版本 →",
             "dl-win-lin-title": "Windows（x64）/ Linux",
-            "dl-win-lin": "WinUI 3 与 GTK4 原生壳已随 v0.2.0 交付：Windows 为 MSI + 便携 zip，Linux 为 x64/arm64 的 deb、rpm、AppImage、tar.gz 与便携 zip，随附 SHA256SUMS 校验文件与 SBOM。",
+            "dl-win-lin": "Windows（WinUI 3 原生壳）为 MSI + 便携 zip；Linux（GTK4 原生壳）为 x64 / arm64 的 deb、rpm、AppImage、tar.gz 与便携 zip。均随附 SHA256SUMS、逐文件 .sha256 与 SBOM。",
             "dl-win-go": "下载 MSI →",
             "dl-platforms-title": "平台",
-            "dl-platforms-body": "v0.2.0 已发布：macOS、Windows、Linux 三平台安装包全部上线。这是开发者工具，不做移动端。",
-            "roadmap-title": "路线图",
-            "rm1": "Windows / Linux 原生壳 + 首个发布（三平台安装包）",
-            "rm2": "轮换工作流：generate-next → promote 两阶段，照 family runbook 走",
-            "rm3": "散件扫描：扫工作树找未收编的 PEM/DER，泄漏面主动暴露",
-            "rm4": "生态兼容：Sparkle / Tauri updater / electron-updater 钥格式导入导出",
+            "dl-platforms-body": "v0.3.0 已发布：三平台安装包与校验文件都在 Releases 页。这是开发者工具，不做移动端。",
+            "roadmap-title": "已交付",
+            "rm1": "Windows（WinUI 3）/ Linux（GTK4）原生壳交付，三平台安装包全矩阵",
+            "rm2": "两阶段轮换：Stage → Promote，配对不绿不能晋升",
+            "rm3": "散钥扫描：路径 / 行号 / 指纹，值永不显示",
+            "rm4": "更新器格式互通：Sparkle / minisign / Tauri 导入导出，剪贴板直达",
             "start.kicker": "开始使用",
             "start.title": "从一次有效使用开始。",
-            "start.status": "AGPL-3.0 许可的免费发布基础设施工具，不接商业激活。",
-            "start.platforms": "提供 macOS、Windows、Linux 桌面预览。连接真实发布凭据前，先使用可丢弃的合成密钥库。",
+            "start.status": "v0.3.0 已发布，三平台原生应用；源码以 AGPL-3.0 许可开放。",
+            "start.platforms": "macOS、Windows、Linux 桌面版均可下载。连接真实发布凭据前，先用可丢弃的合成密钥库练手。",
             "start.s1.body": "建立临时测试库；查看条目名称和指纹，不展示私钥值。",
             "start.s2.body": "逐个校验密钥对，分别处理每个失败结果；一个密钥正确不表示整个节均正确。",
             "start.s3.body": "先用测试密钥演练备份和两阶段轮换，再修改已安装应用信任的发布密钥。",
-            "start.limits-a": "多密钥校验已由 ",
-            "start.limits-b": " 修正。备份恢复、孤立条目检测、剪贴板暴露与打包发布证据仍需按 ",
-            "start.limits-c": " 推进；不构成安全认证。",
+            "start.limits": "已交付的能力以 Releases 页与 CHANGELOG 中的发布证据为准；本站内容是产品介绍，不构成安全认证。",
             "start.guide": "安装、隐私与恢复",
             "start.help": "反馈与帮助",
             "footer-note": "引擎零网络代码；库文件永远在你自己的同步盘里。明文同步是信任设备间的设计决策，防失窃交给各机全盘加密。",
@@ -416,19 +416,23 @@
             "nav.why": "Why", "nav.principles": "Principles", "nav.start": "Get started", "nav.download": "Download", "nav.guide": "Guide", "nav.github": "GitHub",
             "kicker": "local vault · copy-only values · zero network",
             "hero-title": "Give your update-signing keys a proper home.",
-            "hero.availability": "Development preview. Free release-infrastructure tool under AGPL-3.0; no commercial activation.",
+            "hero.availability": "v0.3.0 is out. Native apps for macOS, Windows and Linux; source licensed AGPL-3.0.",
             "hero-lede": "Desktop apps that update themselves all share one trust model: a private key signs the update manifest, a public key embedded in the installed app verifies it — Sparkle, Tauri, electron-updater, WinSparkle. What nobody hands you is custody of the private half. One leak, one stray copy, one accidental delete, and your whole update line goes down. Keyward turns that into buttons.",
-            "hero.badge": "Development preview · AGPL-3.0 · macOS / Windows / Linux",
+            "hero.badge": "v0.3.0 · AGPL-3.0 · macOS / Windows / Linux",
             "hero.source": "View source",
             "dl.generic": "Get Keyward",
             "dl.mac": "For macOS", "dl.win": "For Windows", "dl.linux": "For Linux",
             "dl.note": "Pick the right package from the Releases page for your platform.",
-            "vs.title": "Release-signing key management should be clear.",
-            "vs.lead": "Local key organization, checks and snapshots. The current INI vault is plaintext—not an HSM or encrypted keychain.",
-            "vs.s1t": "Organize", "vs.s1b": "Keep a local key inventory",
-            "vs.s2t": "Check", "vs.s2b": "Verify signing material",
-            "vs.s3t": "Snapshot", "vs.s3b": "Back up and review using available flows",
-            "vs.caption": "Conceptual workflow—not a current screenshot. Refer to the released build and user guide.",
+            "vs.title": "Secrecy is the interface; status is safety.",
+            "vs.lead": "Four screens pin down the daily experience: overview, rotation, snapshots, stray-key scan — values never on screen, exposure always disclosed, destruction always confirmed.",
+            "vs.f1t": "Status dots at a glance",
+            "vs.f1b": "Every product and every key is judged on its own: paired, attention, neutral and empty dots run through the sidebar and badges — one bad key is never masked by healthy neighbours, and multi-key sections label each fingerprint by name.",
+            "vs.f2t": "Two-phase rotation with a gated Promote",
+            "vs.f2b": "Stage writes the next key under NEXT entries while the active key keeps releasing untouched; Promote stays disabled until the staged pair passes pairing verification. Discard passes a confirmation too — Return always lands on Cancel.",
+            "vs.f3t": "Snapshot first, restore in one click",
+            "vs.f3b": "Generate, import, edit, delete — every write snapshots the whole store first, and snapshots travel with the vault in your sync folder; recovery is one Restore click away, on every device.",
+            "vs.f4t": "Stray-key scan, fingerprints only",
+            "vs.f4b": "Sweep a working tree for private-key material that never made it into the vault — path, line, kind and fingerprint per row. PEM headers, base64-DER and Sparkle seeds are all recognized; values are never shown.",
             "why-title": "Why Keyward",
             "w1-title": "Leaks are closer than you think",
             "w1-body": "One debug command, one PEM body pasted into a log, and the private key is in a session transcript. Leaks are not hacker movie plots — they are everyday slips. It happened to us twice in two weeks.",
@@ -437,21 +441,21 @@
             "w3-title": "Losing the key ends the update line",
             "w3-body": "While the private key lives only in a CI secret, one bad delete or one corrupt write means installed users never receive another update. Backup should not be \"remember to copy it\".",
             "principles-title": "Design principles",
-            "p1-title": "Values are never displayed",
-            "p1-body": "A private key has exactly one way out of the engine: the clipboard. Listings and check results carry names, counts and fingerprints only — one wrong struct in a log line is an incident.",
-            "p2-title": "Every write snapshots first",
-            "p2-body": "Any change snapshots the whole store into the sync folder first — snapshots travel with the vault, a bad write is one restore away, and every device has a copy.",
-            "p3-title": "Plaintext sync, budget to disk encryption",
-            "p3-body": "The vault is a plaintext INI in your own sync folder between trusted devices; the engine has zero network code. Theft is FileVault / BitLocker territory.",
-            "p4-title": "Generation lands in the vault",
-            "p4-body": "Keys generated in-app are written straight into the store — not even a momentary stray file. Values are hard-single-line, bad pastes surface as line numbers; the format is your existing one, zero migration.",
+            "p1-title": "Secrecy is the interface",
+            "p1-body": "The value has no place on screen: listings and check results carry names, counts and fingerprints only — the first 16 hex of SHA-256, the only derived identifier allowed. A value leaves through one door: an explicit copy.",
+            "p2-title": "Exposure is always disclosed",
+            "p2-body": "Every copy announces that any app can read the clipboard, then auto-clears after 30 s; background clears are announced the same way — never silent. Copy as… exports in Sparkle / minisign / Tauri shapes go through the same disclosure.",
+            "p3-title": "Error-proofing is consistent",
+            "p3-body": "Generate, stage, promote, discard, delete — all pass a confirmation dialog: the safe action holds the primary spot, Return always lands on Cancel, and destructive actions need an explicit click. Delete copy explains the entry's purpose first, then the snapshot path back.",
+            "p4-title": "Plaintext, and free to leave",
+            "p4-body": "The vault is a plaintext INI in your own sync folder — stable format, leave any time; Keyward is a discipline layer, not a lock. The engine has zero network code and keys never leave the machine; theft is FileVault / BitLocker territory.",
             "start-title": "Get started in three steps",
             "s1-title": "Point it at your vault",
             "s1-body": "Pick your vault on first launch — any INI in the same format works — and Keyward remembers. No new format, no forced migration; your sync folder stays the single source of truth.",
             "s2-title": "One-click Deep Check",
             "s2-body": "Parses every private key, derives the public half, computes fingerprints and pairs them against stored public material — an afternoon of hand-run openssl, read at a glance.",
             "s3-title": "Every change leaves a floor",
-            "s3-body": "Generate, import, edit, delete — each step snapshots first; restoring is one click. Values leave only through copy-to-clipboard, never a display.",
+            "s3-body": "Generate, import, edit, delete — each step snapshots first, and in-app generation writes straight into the vault so not even a momentary stray file exists. Restoring is one click; values leave only through copy-to-clipboard, never a display.",
             "download-kicker": "Installers",
             "download-title": "Download",
             "dl-mac-title": "macOS (Apple Silicon / Intel)",
@@ -459,25 +463,23 @@
             "dl-mac-go": "Download DMG →",
             "dl-all": "All releases →",
             "dl-win-lin-title": "Windows (x64) / Linux",
-            "dl-win-lin": "The WinUI 3 and GTK4 native hosts shipped with v0.2.0: an MSI plus portable zip on Windows, and deb, rpm, AppImage, tar.gz and portable zip for Linux x64 + arm64, with SHA256SUMS and SBOMs.",
+            "dl-win-lin": "Windows (native WinUI 3 host): an MSI plus a portable zip. Linux (native GTK4 host): deb, rpm, AppImage, tar.gz and portable zip for x64 and arm64. All carry SHA256SUMS, per-file .sha256 sidecars and SBOMs.",
             "dl-win-go": "Download MSI →",
             "dl-platforms-title": "Platforms",
-            "dl-platforms-body": "v0.2.0 is out: macOS, Windows and Linux installers are all live. A developer tool — no mobile.",
-            "roadmap-title": "Roadmap",
-            "rm1": "Windows / Linux native hosts — completing the three-platform installer matrix",
-            "rm2": "Rotation workflow: generate-next → promote, following the family runbook",
-            "rm3": "Stray scan: sweep working trees for uncollected PEM/DER and surface the leak area",
-            "rm4": "Ecosystem formats: Sparkle / Tauri updater / electron-updater key import & export",
+            "dl-platforms-body": "v0.3.0 is out: installers and checksum files for all three platforms are on the Releases page. A developer tool — no mobile.",
+            "roadmap-title": "Shipped",
+            "rm1": "Windows (WinUI 3) and Linux (GTK4) native hosts — the full three-platform installer matrix",
+            "rm2": "Two-phase rotation: Stage → Promote, gated by pairing verification",
+            "rm3": "Stray-key scan: path / line / fingerprint, values never shown",
+            "rm4": "Updater formats: Sparkle / minisign / Tauri import & export, clipboard-only",
             "start.kicker": "Get started",
             "start.title": "Start with one useful session.",
-            "start.status": "Free release-infrastructure tool under AGPL-3.0; no commercial activation.",
-            "start.platforms": "Desktop previews for macOS, Windows and Linux. Use a synthetic disposable vault before connecting real release credentials.",
+            "start.status": "v0.3.0 is out — native apps on all three platforms; source licensed AGPL-3.0.",
+            "start.platforms": "Desktop builds for macOS, Windows and Linux are downloadable. Rehearse on a synthetic disposable vault before connecting real release credentials.",
             "start.s1.body": "Create a temporary test vault; inspect entry names and fingerprints rather than displaying private values.",
             "start.s2.body": "Validate each key pair and inspect every reported failure separately. One valid key does not validate all keys in a section.",
             "start.s3.body": "Rehearse backup and a two-stage rotation on test keys before changing the key used by installed applications.",
-            "start.limits-a": "Multi-key validation was corrected in ",
-            "start.limits-b": ". Backup/restore, orphan detection, clipboard exposure and packaged release evidence still require the work tracked in ",
-            "start.limits-c": "; do not infer a security certification.",
+            "start.limits": "What has shipped is what the Releases page and CHANGELOG evidence show; this site is a product page, not a security certification.",
             "start.guide": "Installation, privacy & recovery",
             "start.help": "Get help",
             "footer-note": "Zero network code in the engine; the vault always stays in your own sync folder. Plaintext sync between trusted devices is a design decision — theft is what full-disk encryption is for.",
