@@ -8,3 +8,4 @@ macos-host/.build/
 .DS_Store
 compiled/
 **/compiled/
+keys/
