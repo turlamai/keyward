@@ -359,6 +359,39 @@
         },
         "kind": "list"
       }
+    },
+    {
+      "arguments": [
+        {
+          "name": "manifest",
+          "type": {
+            "kind": "scalar",
+            "name": "Bytes"
+          }
+        },
+        {
+          "name": "install-kind",
+          "type": {
+            "kind": "scalar",
+            "name": "String"
+          }
+        },
+        {
+          "name": "linux-package-format",
+          "type": {
+            "kind": "scalar",
+            "name": "String"
+          }
+        }
+      ],
+      "name": "update-check",
+      "result": {
+        "element": {
+          "kind": "scalar",
+          "name": "String"
+        },
+        "kind": "list"
+      }
     }
   ],
   "rvt-protocol": 1,
