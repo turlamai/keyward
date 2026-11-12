@@ -9,9 +9,9 @@
          racket/list
          racket/string
          (only-in crypto pk-key->datum)
-         "../app/core/blake2b.rkt"
-         "../app/core/keyformats.rkt"
-         "../app/core/keymeta.rkt")
+         "../racket/core/blake2b.rkt"
+         "../racket/core/keyformats.rkt"
+         "../racket/core/keymeta.rkt")
 
 (define (b64 btes) (bytes->string/utf-8 (base64-encode btes "")))
 (define (unb64 s) (base64-decode (string->bytes/utf-8 s)))

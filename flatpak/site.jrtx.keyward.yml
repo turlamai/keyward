@@ -34,8 +34,8 @@ finish-args:
   - --device=dri
   - --share=ipc
   # Keyward is a file-backed vault, and every path it owns or touches is
-  # a real user path, not an app-redirected one (app/core/config.rkt,
-  # app/core/store.rkt):
+  # a real user path, not an app-redirected one (racket/core/config.rkt,
+  # racket/core/store.rkt):
   #   * the config dir is ~/.keyward (KEYWARD_CONFIG_DIR overrides);
   #   * the default store is ~/Sync/Keys/secrets.ini — the private sync
   #     folder, so a vault written inside the sandbox must land in the
@@ -51,7 +51,7 @@ finish-args:
   - --filesystem=home
   # No --share=network, on purpose and doubly so here: keyward has no
   # updater at all ("a key vault does not update itself",
-  # app/update-policy.rkt — the future "Check for updates" UI takes
+  # racket/update-policy.rkt — the future "Check for updates" UI takes
   # manifest bytes handed to it, it never contacts a remote), so a
   # sandboxed key vault with network access would be a strictly larger
   # attack surface than the deb/rpm/AppImage shapes.

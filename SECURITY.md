@@ -18,7 +18,7 @@ Please do not open public issues for security problems.
 
 In scope:
 
-- **The vault store** (`app/core/store.rkt`): the comment-preserving
+- **The vault store** (`racket/core/store.rkt`): the comment-preserving
   INI parser/writer, atomic writes, the 0600 permission tightening, and
   the append-only snapshots under `<folder>/.history/keyward/` that run
   before every mutation. The store is plaintext by design — custody
@@ -30,25 +30,25 @@ In scope:
   exposure disclosure and a 30 s auto-clear). Listings, deep-check and
   scan results must carry names, counts and fingerprints only — a value,
   or a fraction of one, appearing anywhere else is a bug.
-- **Update trust policy** (`app/update-policy.rkt`): the offline trust
+- **Update trust policy** (`racket/update-policy.rkt`): the offline trust
   decision — the user-initiated requirement (non-user-initiated checks
   are refused), Ed25519 verification against a pinned public key and
   exact key ID embedded in the application build, the immutable
   release-tag URL requirement, the manifest (1 MiB) and payload
   (512 MiB) size caps, and the rule that Linux package-manager updates
   must carry an explicitly declared deb or rpm format.
-- **Key format import and export** (`app/core/keyformats.rkt`): PEM /
+- **Key format import and export** (`racket/core/keyformats.rkt`): PEM /
   base64-DER / Sparkle / minisign normalization and export. Values are
   converted, never logged; password-protected minisign secret keys are
   refused, not cracked.
-- **The stray-key scanner** (`app/core/strayscan.rkt`): a report must
+- **The stray-key scanner** (`racket/core/strayscan.rkt`): a report must
   never contain key material — path, line, kind and fingerprint only.
 - **The host/backend boundary and the RPC surface**: hosts render and
-  relay; the Racket backend (`app/backend.rkt`) decides. Backend ↔ host
+  relay; the Racket backend (`racket/backend.rkt`) decides. Backend ↔ host
   RVT1 traffic runs over inherited file descriptors (`serve-fds`); the
   backend owns no listening network port. Crypto or trust decisions
   sneaking into a native host are a bug (key parsing lives in
-  `app/core/keymeta.rkt`).
+  `racket/core/keymeta.rkt`).
 - **Manual-update-only as an intentional exemption**: Keyward is a key
   vault and does not update itself — the release pipeline builds with
   `raco rivet release --without-updates` and there is no production

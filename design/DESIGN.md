@@ -10,7 +10,7 @@ Tokens 1:1 提取自 `macos-host/Sources/RivetHost/Theme.swift`（三平台共�
 - **原型范围**（5 屏 × 亮/暗）：① 主视图（英雄屏：概览 tiles + 产品详情 header + Rotation 进行态 + Entries 全状态）② 首启空态（No vault selected + 信任文案）③ 轮换确认（Promote 危险操作对话框 + 安全默认）④ 快照浮层（loss protection + Restore）⑤ 散钥扫描浮层（告警态：路径/行号/指纹，永不显示值）。
   - **设置屏不在范围**：产品真实信息架构没有设置面——保险库选择走系统文件对话框（⌘O）、主题跟随系统、引擎零网络故无配置项；原型如实反映现有 IA，不为原型虚构产品没有的屏幕。
 - **Exit 条件**：5 屏关键状态齐（空态：屏②与 Entries/空节；告警态：屏⑤与 empty/empty:2 状态；进行态：轮换 Phase 1）+ 交互逻辑定稿 + HIG 清单全过 + 用户评审通过；验收后实物截图才能作对外素材。
-- **不在范围**：新功能、RVT1 契约变更（不动 `rivet-schema.json` / `app/backend.rkt`）、商业/定价 UI、新配色体系。
+- **不在范围**：新功能、RVT1 契约变更（不动 `rivet-schema.json` / `racket/backend.rkt`）、商业/定价 UI、新配色体系。
 
 ## 设计原则（HIG 内核）
 

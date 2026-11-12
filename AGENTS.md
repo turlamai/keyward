@@ -40,7 +40,7 @@ returns a failing exit status when the current host is not usable.
 
 ## Architecture boundary
 
-- Keep shared application and domain logic in `app/backend.rkt`.
+- Keep shared application and domain logic in `racket/backend.rkt`.
 - Keep Windows UI native in WinUI 3 / C++/WinRT under `windows/`.
 - Keep macOS UI native in SwiftUI/AppKit under `macos-host/`.
 - Keep Linux UI native in GTK4 under `linux/`.
@@ -81,7 +81,7 @@ failure behavior, packaged dependency closure, and a clean-machine smoke test.
 
 Source you may edit:
 
-- `app/`
+- `racket/`
 - `windows/`
 - `macos-host/`
 - `linux/`

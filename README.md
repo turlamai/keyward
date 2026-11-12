@@ -113,7 +113,7 @@ raco test tests/      # engine tests (store + key metadata)
 raco rivet package    # distributable
 ```
 
-- Shared engine: `app/backend.rkt` + `app/core/` (RVT1 contract — the
+- Shared engine: `racket/backend.rkt` + `racket/core/` (RVT1 contract — the
   wire surface shared by every future host)
 - macOS UI: `macos-host/Sources/RivetHost/`
 - Windows UI: `windows/` · Linux UI: `linux/`

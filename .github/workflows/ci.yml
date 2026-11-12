@@ -39,7 +39,7 @@ jobs:
       - name: Engine tests
         run: raco test tests/
       - name: Backend compiles against the RVT1 contract
-        run: raco make app/backend.rkt
+        run: raco make racket/backend.rkt
 
   macos:
     name: macOS host build

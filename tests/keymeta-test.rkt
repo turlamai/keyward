@@ -8,7 +8,7 @@
          racket/format
          racket/list
          racket/string
-         "../app/core/keymeta.rkt")
+         "../racket/core/keymeta.rkt")
 
 (define (b64 btes) (bytes->string/utf-8 (base64-encode btes "")))
 

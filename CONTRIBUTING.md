@@ -6,7 +6,7 @@ agree your contribution is licensed under AGPL-3.0.
 
 Keyward follows the Rivet application architecture: Racket owns domain
 logic, native hosts own UI, and the contract between them lives in
-`app/backend.rkt` (RVT1) plus `rivet-schema.json`. Keep that split
+`racket/backend.rkt` (RVT1) plus `rivet-schema.json`. Keep that split
 intact.
 
 ## Ground rules
@@ -23,12 +23,12 @@ intact.
    without changing the product contract first
    ([docs/UPDATE-SECURITY.md](docs/UPDATE-SECURITY.md), `AGENTS.md`).
 3. **Manual-update-only is an intentional exemption.** A key vault does
-   not contact a server or self-apply updates. `app/update-policy.rkt`
+   not contact a server or self-apply updates. `racket/update-policy.rkt`
    is the pure offline trust boundary (user-initiated checks, pinned
    Ed25519 key, immutable tag URL, size caps); anything that downloads
    or installs without explicit user action is a critical regression.
 4. **The wire contract is cross-platform.** Changing any RPC in
-   `app/backend.rkt` is a three-platform release: regenerate the
+   `racket/backend.rkt` is a three-platform release: regenerate the
    checked-in clients with `raco rivet build`
    (`macos-host/Sources/RivetHost/GeneratedBackend.swift`,
    `windows/GeneratedBackend.hpp`, `linux/GeneratedBackend.hpp`) in the
@@ -43,7 +43,7 @@ intact.
 
 ```bash
 raco test tests/                       # engine tests (store + key metadata)
-raco make app/backend.rkt              # backend compiles against the RVT1 contract
+raco make racket/backend.rkt              # backend compiles against the RVT1 contract
 bash scripts/check-release-version.sh  # VERSION == rivet.rktd == CHANGELOG
 raco rivet build                       # backend + current platform native host
 ```

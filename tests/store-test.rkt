@@ -7,7 +7,7 @@
          racket/list
          racket/path
          racket/string
-         "../app/core/store.rkt")
+         "../racket/core/store.rkt")
 
 (define (make-fixture! text)
   (define path (make-temporary-file "keyward-test~a.ini"))

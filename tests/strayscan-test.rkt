@@ -11,9 +11,9 @@
          racket/string
          (only-in crypto pk-key->datum datum->pk-key)
          (only-in crypto/libcrypto libcrypto-factory)
-         "../app/core/keyformats.rkt"
-         "../app/core/keymeta.rkt"
-         "../app/core/strayscan.rkt")
+         "../racket/core/keyformats.rkt"
+         "../racket/core/keymeta.rkt"
+         "../racket/core/strayscan.rkt")
 
 (define (b64 btes) (bytes->string/utf-8 (base64-encode btes "")))
 

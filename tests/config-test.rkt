@@ -6,7 +6,7 @@
          rackunit
          racket/file
          racket/path
-         "../app/core/config.rkt")
+         "../racket/core/config.rkt")
 
 (define scratch (make-temporary-file "kw-cfg~a" 'directory))
 (define old-env (getenv "KEYWARD_CONFIG_DIR"))

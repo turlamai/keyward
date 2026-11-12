@@ -7,7 +7,7 @@
          rackunit
          racket/format
          racket/list
-         "../app/core/blake2b.rkt")
+         "../racket/core/blake2b.rkt")
 
 (define (hex bs)
   (apply string-append (for/list ([b (in-bytes bs)]) (~r b #:base 16 #:min-width 2 #:pad-string "0"))))

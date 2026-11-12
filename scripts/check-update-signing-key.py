@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SPKI_PREFIX = bytes.fromhex("302a300506032b6570032100")
 
 
-def trusted_public_key(source_path=ROOT / "app/update-trust.rkt"):
+def trusted_public_key(source_path=ROOT / "racket/update-trust.rkt"):
     source = Path(source_path).read_text(encoding="utf-8")
     match = re.search(r'\(define\s+update-public-key-b64\s+"([A-Za-z0-9+/=]+)"\s*\)', source)
     if not match:
@@ -37,7 +37,7 @@ def verify(private_der, expected_public_der):
     if result.returncode != 0 or not result.stdout:
         raise ValueError("invalid release Ed25519 private key")
     if not hmac.compare_digest(result.stdout, expected_public_der):
-        raise ValueError("release Ed25519 key does not match app/update-trust.rkt")
+        raise ValueError("release Ed25519 key does not match racket/update-trust.rkt")
 
 
 def verify_secret(encoded, expected_public_der):

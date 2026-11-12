@@ -11,8 +11,8 @@
          rackunit
          racket/string
          rivet/distribution
-         "../app/backend.rkt"
-         "../app/update-policy.rkt")
+         "../racket/backend.rkt"
+         "../racket/update-policy.rkt")
 
 (use-all-factories!)
 

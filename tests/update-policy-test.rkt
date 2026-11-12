@@ -8,7 +8,7 @@
          crypto/all
          rackunit
          rivet/distribution
-         "../app/update-policy.rkt")
+         "../racket/update-policy.rkt")
 
 (use-all-factories!)
 

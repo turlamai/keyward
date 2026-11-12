@@ -96,7 +96,7 @@ raco test tests/      # 引擎测试（存储 + 密钥元数据）
 raco rivet package    # 分发产物
 ```
 
-- 共享引擎：`app/backend.rkt` + `app/core/`（RVT1 契约——所有未来宿主
+- 共享引擎：`racket/backend.rkt` + `racket/core/`（RVT1 契约——所有未来宿主
   共享的线上接口）
 - macOS UI：`macos-host/Sources/RivetHost/`
 - Windows UI：`windows/` · Linux UI：`linux/`

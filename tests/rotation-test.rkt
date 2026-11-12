@@ -8,9 +8,9 @@
          racket/file
          racket/list
          racket/string
-         "../app/backend.rkt"
-         "../app/core/keymeta.rkt"
-         "../app/core/store.rkt")
+         "../racket/backend.rkt"
+         "../racket/core/keymeta.rkt"
+         "../racket/core/store.rkt")
 
 (define (b64 btes) (bytes->string/utf-8 (base64-encode btes "")))
 

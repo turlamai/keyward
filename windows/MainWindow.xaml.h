@@ -37,7 +37,7 @@ struct MainWindow : MainWindowT<MainWindow> {
       Microsoft::UI::Xaml::RoutedEventArgs const&);
 
  private:
-  // Rows exactly as the engine returns them (app/backend.rkt header comment).
+  // Rows exactly as the engine returns them (racket/backend.rkt header comment).
   struct ProductInfo {
     std::wstring name;
     std::wstring entries;
