@@ -94,7 +94,7 @@ modules:
         path: keyward-__VERSION__-linux-__ARCH__.tar.gz
         sha256: __SHA256__
       - type: file
-        path: assets/branding/icon_512.png
+        path: assets/branding/icon-512.png
       - type: file
         path: flatpak/site.jrtx.keyward.desktop
     build-commands:
@@ -107,7 +107,7 @@ modules:
       # at the real binary so the runtime layout discovery works.
       - mkdir -p /app/bin
       - ln -s /app/keyward/RivetHost /app/bin/RivetHost
-      - install -Dm644 icon_512.png
+      - install -Dm644 icon-512.png
                     /app/share/icons/hicolor/512x512/apps/site.jrtx.keyward.png
       - install -Dm644 site.jrtx.keyward.desktop
                     /app/share/applications/site.jrtx.keyward.desktop
