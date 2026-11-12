@@ -17,7 +17,7 @@ WinSparkle、Google Omaha——方案都是这一套，而没人替你解决的�
 > 📖 **第一次接触更新签名？** 阅读双语手册——
 > **[使用手册 / Handbook](https://keyward.jrtx.site/guide.html)**（中文原文，
 > 附地道英文翻译，可按语言切换）——
-> 或[源 markdown](docs/GUIDE.zh-CN.md)：安装、连接保险库、每一项日常操作、
+> 或[源 markdown](docs/manual.zh-CN.md)：安装、连接保险库、每一项日常操作、
 > 接入 CI、发布更新、密钥轮换，为零基础读者写就。
 
 Keyward 是一个守护这些密钥的小型桌面应用。建在家族 Rivet 线上

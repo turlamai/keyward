@@ -19,7 +19,7 @@ rotates *you*.
 > 📖 **New to update signing?** Read the bilingual handbook —
 > **[使用手册 / Handbook](https://keyward.jrtx.site/guide.html)** (中文原文，
 > with an idiomatic English translation; switchable per language) —
-> or the [source markdown](docs/GUIDE.zh-CN.md): install, connect a vault,
+> or the [source markdown](docs/manual.zh-CN.md): install, connect a vault,
 > every daily operation, wiring CI, shipping updates, and key rotation,
 > written for complete beginners.
 

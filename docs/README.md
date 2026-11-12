@@ -4,7 +4,7 @@
 
 - [English user guide](USER-GUIDE.md) · [简体中文](USER-GUIDE.zh-CN.md): availability, installation, first use, data/recovery, network/privacy and support.
 - [Vault handbook](../site/guide.html)
-- [Chinese handbook source](../docs/GUIDE.zh-CN.md) (Chinese source)
+- [Chinese handbook source](../docs/manual.zh-CN.md) (Chinese source)
 
 ## Maintain the product
 

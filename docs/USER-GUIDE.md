@@ -51,6 +51,6 @@ Report problems in [GitHub Issues](https://github.com/turlamai/keyward/issues), 
 ## Further reading
 
 - [Vault handbook](../site/guide.html)
-- [Chinese handbook source](../docs/GUIDE.zh-CN.md)
+- [Chinese handbook source](../docs/manual.zh-CN.md)
 - [Project overview and development](../README.md)
 - [Current licence](../LICENSE)

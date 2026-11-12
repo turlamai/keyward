@@ -29,7 +29,7 @@ struct RivetHostApp: App {
                 Button("About Keyward") { model.aboutVisible = true }
                 Button("User Guide — 使用手册") {
                     if let url = URL(string:
-                        "https://github.com/turlamai/keyward/blob/main/docs/GUIDE.zh-CN.md") {
+                        "https://github.com/turlamai/keyward/blob/main/docs/manual.zh-CN.md") {
                         NSWorkspace.shared.open(url)
                     }
                 }

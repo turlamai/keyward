@@ -2301,7 +2301,7 @@ winrt::fire_and_forget MainWindow::OnGuide(
   co_await winrt::Windows::System::Launcher::LaunchUriAsync(
       winrt::Windows::Foundation::Uri{
           L"https://github.com/turlamai/keyward/blob/main/docs/"
-          L"GUIDE.zh-CN.md"});
+          L"manual.zh-CN.md"});
 }
 
 }  // namespace winrt::RivetHost::implementation

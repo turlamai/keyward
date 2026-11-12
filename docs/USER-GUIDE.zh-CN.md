@@ -51,6 +51,6 @@ AGPL-3.0 许可的免费发布基础设施工具，不接商业激活。
 ## 深入阅读
 
 - [密钥库手册](../site/guide.html)
-- [中文手册源文](../docs/GUIDE.zh-CN.md)
+- [中文手册源文](../docs/manual.zh-CN.md)
 - [项目说明与开发入口](../README.zh-CN.md)
 - [现行许可证](../LICENSE)
