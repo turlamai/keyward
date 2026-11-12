@@ -32,6 +32,7 @@
                                 #:current-version current-version
                                 #:install-kind install-kind
                                 #:linux-package-format [linux-package-format #f]
+                                #:channel [channel 'stable]
                                 #:platform [platform (platform-symbol)]
                                 #:architecture [architecture (architecture-symbol)])
   (unless user-initiated?
@@ -77,7 +78,7 @@
   ;; Selecting 'app here would silently ignore every valid release MSI/ZIP.
   (define config
     (updater-config keyward-update-application-id
-                    current-version 'stable
+                    current-version channel
                     platform architecture trusted-public-key
                     expected-key-id 0 keyward-update-maximum-bytes #f))
   (define selection-manifest

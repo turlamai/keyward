@@ -9,6 +9,7 @@
 ;;   entry row       = (name state)        state = "set" | "empty"
 ;;   snapshot row    = (stamp size)
 ;;   generated row   = (key-id fingerprint spki-b64 raw32-b64)
+;;   update row      = (status version installer size name url published detail)
 ;;
 ;; Values are only ever returned by the explicit `entry-get` RPC (hosts use
 ;; it for copy-to-clipboard); every listing/check RPC carries names, counts
@@ -20,19 +21,27 @@
          racket/list
          racket/path
          racket/string
+         rivet/app-info
          rivet/backend
+         rivet/distribution
          "core/config.rkt"
          "core/keyformats.rkt"
          "core/keymeta.rkt"
          "core/store.rkt"
-         "core/strayscan.rkt")
+         "core/strayscan.rkt"
+         "update-policy.rkt"
+         "update-trust.rkt")
 
 (provide start
          ;; narrow test-facing surface: the rotation RPC bodies run as plain
          ;; functions against the process-global selection, so the runbook
          ;; stays unit-testable without standing up the wire
          select-store!
-         rotation-start rotation-status rotation-promote rotation-cancel)
+         rotation-start rotation-status rotation-promote rotation-cancel
+         ;; update-check-review takes the trust root as keywords so tests
+         ;; verify the full verify→select→row path with synthetic in-memory
+         ;; keys; the RPC pins the shipped trust root
+         update-check-review)
 
 ;; the active vault: a path string, or #f until the user picks one. This is
 ;; PROCESS-global state in a plain box — rivet runs every request handler in
@@ -318,6 +327,92 @@
 
 (define-rpc (snapshot-restore [stamp String] : Bool)
   (store-restore-snapshot! (active-store) stamp))
+
+;; ---- update check (explicit consent, engine-side verification) ----------------
+;;
+;; The host fetches the signed manifest ONLY after the user chooses
+;; "Check for Updates" and hands the bytes in here; the engine itself
+;; performs no network I/O, ever (docs/UPDATE-SECURITY.md). Verification
+;; runs against the trust root pinned in update-trust.rkt — never against
+;; material the feed supplies. The RPC works without an open vault:
+;; checking for updates must not depend on, touch, or leak vault state.
+;;
+;;   update row = (status version installer size name url published detail)
+;;     status  = "available" | "up-to-date" | "rejected"
+;;     detail  = bounded one-line reason; "" unless status is "rejected"
+;;     (fields other than status/detail stay "" when they do not apply)
+;;
+;; Every rejection is a typed result row, not an Error frame: a forged,
+;; stale or foreign feed is an expected outcome the UI presents, not a
+;; crash. Consent: this RPC exists only because the user asked for a check,
+;; so preview-keyward-update's user-initiated gate is satisfied here by
+;; construction and stays in the policy module as defense in depth.
+
+(define (bounded-detail message)
+  (define one-line
+    (string-replace (string-replace (~a message) "\n" " ") "\r" " "))
+  (if (> (string-length one-line) 400)
+      (string-append (substring one-line 0 400) "…")
+      one-line))
+
+;; the signed asset name is the tail of its pinned immutable release-tag URL
+(define (asset-name url)
+  (car (reverse (string-split url "/"))))
+
+(define (update-check-review manifest-bytes install-kind linux-package-format
+                             #:trusted-public-key [trusted-public-key (update-public-key-b64)]
+                             #:expected-key-id [expected-key-id (update-key-id)]
+                             #:current-version [current-version (app-version)]
+                             #:release-channel [release-channel (app-release-channel)]
+                             #:platform [platform (platform-symbol)]
+                             #:architecture [architecture (architecture-symbol)])
+  (define kind (string->symbol install-kind))
+  (define linux-format
+    (and (not (string=? linux-package-format ""))
+         (string->symbol linux-package-format)))
+  ;; the wire speaks strings; select-update compares channels with eq?
+  (define channel (string->symbol release-channel))
+  (define (row status
+               #:version [version ""]
+               #:installer [installer ""]
+               #:size [size ""]
+               #:name [name ""]
+               #:url [url ""]
+               #:published [published ""]
+               #:detail [detail ""])
+    (list status version installer size name url published detail))
+  (with-handlers
+      ([exn:fail?
+        (lambda (e)
+          (row "rejected" #:detail (bounded-detail (exn-message e))))])
+    (define candidate
+      (preview-keyward-update manifest-bytes
+                              #:user-initiated? #t
+                              #:trusted-public-key trusted-public-key
+                              #:expected-key-id expected-key-id
+                              #:current-version current-version
+                              #:install-kind kind
+                              #:linux-package-format linux-format
+                              #:channel channel
+                              #:platform platform
+                              #:architecture architecture))
+    (cond
+      [(not candidate) (row "up-to-date")]
+      [else
+       (define artifact (update-candidate-artifact candidate))
+       (define manifest (update-candidate-manifest candidate))
+       (row "available"
+            #:version (update-manifest-version manifest)
+            #:installer (symbol->string (update-artifact-installer artifact))
+            #:size (number->string (update-artifact-size artifact))
+            #:name (asset-name (update-artifact-url artifact))
+            #:url (update-artifact-url artifact)
+            #:published (update-manifest-published-at manifest))])))
+
+(define-rpc (update-check [manifest Bytes]
+                          [install-kind String]
+                          [linux-package-format String] : (List String))
+  (update-check-review manifest install-kind linux-package-format))
 
 ;; ---- lifecycle ----------------------------------------------------------------
 

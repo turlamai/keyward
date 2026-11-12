@@ -17,11 +17,13 @@ private func encode_String(_ v: String) -> RivetValue { .string(v) }
 private func encode__List_String_(_ v: [String]) -> RivetValue { .list(v.map(encode_String)) }
 private func encode__List_List_String_(_ v: [[String]]) -> RivetValue { .list(v.map(encode__List_String_)) }
 private func encode_Bool(_ v: Bool) -> RivetValue { .bool(v) }
+private func encode_Bytes(_ v: Data) -> RivetValue { .bytes(v) }
 
 private func decode_String(_ v: RivetValue) throws -> String { guard case .string(let x) = v else { throw RivetGeneratedError.typeMismatch("String") }; return x }
 private func decode__List_String_(_ v: RivetValue) throws -> [String] { guard case .list(let xs) = v else { throw RivetGeneratedError.typeMismatch("(List String)") }; return try xs.map(decode_String) }
 private func decode__List_List_String_(_ v: RivetValue) throws -> [[String]] { guard case .list(let xs) = v else { throw RivetGeneratedError.typeMismatch("(List (List String))") }; return try xs.map(decode__List_String_) }
 private func decode_Bool(_ v: RivetValue) throws -> Bool { guard case .bool(let x) = v else { throw RivetGeneratedError.typeMismatch("Bool") }; return x }
+private func decode_Bytes(_ v: RivetValue) throws -> Data { guard case .bytes(let x) = v else { throw RivetGeneratedError.typeMismatch("Bytes") }; return x }
 
 public protocol RivetGeneratedRPCClient: Sendable {
     func call(_ name: String, arguments: [RivetValue]) async throws -> RivetValue
@@ -128,5 +130,9 @@ public struct RivetAPI: Sendable {
     public func stray_scan_tree(dir: String) async throws -> [[String]] {
         let rivetResult = try await client.call("stray-scan-tree", arguments: [encode_String(dir)])
         return try decode__List_List_String_(rivetResult)
+    }
+    public func update_check(manifest: Data, install_kind: String, linux_package_format: String) async throws -> [String] {
+        let rivetResult = try await client.call("update-check", arguments: [encode_Bytes(manifest), encode_String(install_kind), encode_String(linux_package_format)])
+        return try decode__List_String_(rivetResult)
     }
 }

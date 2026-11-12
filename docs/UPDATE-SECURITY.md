@@ -23,12 +23,19 @@ signed `update-manifest.json` — the signature chain exists before any
 consumer does. This does not make the application an updater: it only
 establishes the authenticated feed the future explicit flow will verify.
 
-`app/update-policy.rkt` introduces the *offline trust decision* needed for
-future explicit user-initiated checks. It does **not** download, install, or
-contact a release server. It does not load the vault or any private key.
-The release feed must be signed with the official update signing key; the
-corresponding public key and exact key ID are pinned into the shipped
-application (`app/update-trust.rkt`), never supplied by downloaded metadata.
+`app/update-policy.rkt` holds the *offline trust decision* for explicit
+user-initiated checks, and `app/backend.rkt` now exposes it as the
+`update-check` RPC: the host hands in the manifest bytes it fetched only
+after the user asked, the engine verifies the Ed25519 signature and pinned
+key ID before accepting release metadata, selects the artifact for its
+platform, architecture and declared install kind, and returns a typed
+metadata row (version, installer, byte size, asset name, immutable
+release-tag URL). Every rejection is a typed row the UI can present, never
+an Error frame. The engine itself does **not** download, install, or
+contact a release server, and the RPC touches no vault and no private key.
+Native fetch, bounded download, install handoffs, upgrade CI and the
+update UI remain future rungs (issue #15); nothing here claims automatic
+update support.
 
 ## Future product flow
 
