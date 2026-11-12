@@ -20,25 +20,17 @@ Tokens 1:1 提取自 `macos-host/Sources/RivetHost/Theme.swift`（三平台共�
 - **防错一致**：Generate / Stage / Promote / Discard / Delete 全部确认对话框；**Return 永远落在 Cancel**（安全动作拿视觉主位），破坏性动作需显式点击；删除文案先讲条目用途（purpose 提示），再讲可恢复（快照先行）。
 - **层级克制**：bg < sidebar/surface < badge 三层表面足够；饱和色只上 glyph 与主按钮，选中/悬停是 quiet fill；边框不随状态变色（唯一许可例外：EntryCard 悬停描边——复制的唯一入口需要引导）。
 
-## Tokens（与实现 1:1）
+## Tokens（语义；值不在此复制）
 
-| Token | Light | Dark | 用途 |
-|---|---|---|---|
-| `--bg` | `#faf7f2` | `#1b1a18` | 画布 |
-| `--sidebar` | `#f3eee6` | `#24221f` | 侧栏/状态栏底 |
-| `--surface` | `#ffffff` | `#2e2b27` | 卡片/浮层 |
-| `--line` | `#e8e2d9` | `#3a362f` | 分隔/描边 |
-| `--ink` | `#241f1b` | `#ece9e2` | 主文字 |
-| `--ink-2` | `#6b6660` | `#a6a099` | 次级文字 |
-| `--ink-3` | `#a8a099` | `#6b6660` | 辅助文字/占位 |
-| `--accent` | `#c15f3c` | `#d08a6e` | 品牌 glyph/主按钮/Copy 入口 |
-| `--accent-soft` | `#f7e5dd` | `#3a2d27` | accent 弱底 |
-| `--selection` | accent @10% | accent @16% | 选中 quiet fill |
-| `--hover` | accent @6% | accent @10% | 悬停 quiet fill |
-| `--badge` | `#f0ebe2` | `#3a362f` | KVChip/徽标底 |
-| `--ok` | `#2e7d32` | `#81c784` | 配对/检查通过 |
-| `--warn` | `#b26a00` | `#ffb74d` | 注意/空值/破坏性 |
-| `--neutral` | `#8e8e93` | `#98989e` | 空节/无键 |
+值类 token 真源 = `macos-host/Sources/RivetHost/Theme.swift`（三平台共享 family token 结构，亮暗两态均为 ThemeState 已验证状态）；产品站 `site/styles.css` 与之同源（bg/accent/line 一致，站点 `--line` 暗值 `#35322d` 与 app `#3a362f` 的微差以 app 为准）；原型 `design/prototype/shared.css` 与 Theme.swift 一一对应，本表只记语义。
+
+| Token | 语义 |
+|---|---|
+| `--bg --sidebar --surface --line` | 画布 / 侧栏状态栏 / 卡片浮层 / 分隔描边 |
+| `--ink --ink-2 --ink-3` | 主/次级/辅助文字三档 |
+| `--accent --accent-soft` | 品牌 glyph/主按钮/Copy 入口 + 弱底（`--accent-soft` 是唯一非 Theme.swift 项，取自产品站同源暖色；app 端其职责由 selection/hover/badge 覆盖，原型保留备用） |
+| `--selection --hover --badge` | 选中/悬停 quiet fill（accent alpha）+ KVChip 徽标底 |
+| `--ok --warn --neutral` | 状态语义：配对/检查通过 / 注意/空值/破坏性 / 空节/无键 |
 
 - **字体**：`system-ui, -apple-system, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei"`；正文 13px/1.5，产品名标题 22px/700，pane 标题 17px，次级 12px，辅助 10–11px；**entry 名、指纹、路径、时间戳一律 mono**（`ui-monospace, SFMono-Regular, Menlo, Consolas`）——标识符与正文不同字形是这产品可扫读性的关键。
 - **几何**：侧栏 280px · 状态栏 28px（Theme.swift 实测值）；详情大卡圆角 14px · 卡片/控件 8px · chip 6px。**间距节奏**：4/8/12/16/20。**动效**：120ms easeOut，不过度。
