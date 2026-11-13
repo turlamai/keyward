@@ -17,7 +17,7 @@ concurrency:
 
 # Pinned so CI validates the same rivet the release workflow ships with.
 env:
-  RIVET_PIN: v0.16.0
+  RIVET_PIN: 8db939999ded6bde9696fbc420730a9f86901c77
 
 jobs:
   engine:
@@ -110,7 +110,7 @@ jobs:
       # `uses:` cannot expand ${{ env.RIVET_PIN }} — keep it in sync with
       # RIVET_PIN above when bumping rivet.
       - name: Set up embeddable Racket CS
-        uses: turlamai/rivet/.github/actions/setup-embed-racket@v0.16.0
+        uses: turlamai/rivet/.github/actions/setup-embed-racket@8db939999ded6bde9696fbc420730a9f86901c77
       # Installed after the embeddable runtime so the catalog dependency
       # closure (cext-lib, crypto-lib, keel) resolves against the minimal
       # build — it ships no packages of its own. crypto backs keyward's

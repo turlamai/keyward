@@ -18,10 +18,9 @@
 #                  CI secret stores it base64-encoded.
 #
 # Emits <dist-dir>/update-manifest.json — a single self-contained signed
-# wrapper (schema + base64 payload + signature block) carrying every
-# platform × architecture. No channel-file alias: Keyward never shipped an
-# update feed before this key existed, so there are no pre-switch clients
-# and the canonical name is the only name.
+# wrapper carrying every platform × architecture. No channel-file alias:
+# Keyward never shipped an update feed before this key existed, so there
+# are no pre-switch clients and the canonical name is the only name.
 #
 # Feed policy (docs/UPDATE-SECURITY.md "Future product flow" #6): the feed
 # carries the install handoffs the updater will drive — macOS app-bundle
@@ -29,13 +28,11 @@
 # DEB/RPM upgrade through the package manager and the portable zips are
 # human/package-manager assets, not feed entries.
 #
-# Signing happens in the publish job over the merged dist/ (one feed, not
-# rivet's per-platform manifests; the release legs stay
-# --without-updates). The workflow fails closed without the correct
-# signing secret — docs/UPDATE-SECURITY.md release-signing prerequisite.
+# The signing, artifact hashing, schema validation, and feed format live in
+# `raco rivet sign-manifest`; this wrapper owns only Keyward's five
+# artifacts, the `app` component, and identity.
 #
 # Env overrides: RELEASE_ASSET_BASE_URL, RIVET_UPDATE_KEY_ID.
-
 set -euo pipefail
 
 TAG="${1:?usage: make-update-manifest.sh <tag> <dist-dir> <key-der-path>}"
@@ -43,102 +40,37 @@ DIST="${2:?usage: make-update-manifest.sh <tag> <dist-dir> <key-der-path>}"
 KEY_PATH="${3:?usage: make-update-manifest.sh <tag> <dist-dir> <key-der-path>}"
 VERSION="${TAG#v}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+DIST="$(cd "$DIST" && pwd)"
+cd "$ROOT"
 KEY_ID="${RIVET_UPDATE_KEY_ID:-keyward-2026-11}"
 BASE_URL="${RELEASE_ASSET_BASE_URL:-https://github.com/turlamai/keyward/releases/download/$TAG}"
 
-# ---- verify tag/version alignment -------------------------------------------
-[[ "$VERSION" == "$(tr -d '[:space:]' < "$ROOT/VERSION")" ]] || {
-  echo "error: tag $TAG does not match VERSION '$(cat "$ROOT/VERSION")'" >&2; exit 1; }
+raco rivet check-release-version "$TAG"
 
-for artifact in "$DIST/keyward-$VERSION-macos-arm64.dmg" \
-                "$DIST/keyward-$VERSION-macos-x64.dmg" \
-                "$DIST/keyward-$VERSION-windows-x64.msi" \
-                "$DIST/keyward-$VERSION-linux-x86_64.AppImage" \
-                "$DIST/keyward-$VERSION-linux-aarch64.AppImage"; do
-  [[ -f "$artifact" ]] || { echo "error: missing $artifact" >&2; exit 1; }
-done
+BUILD="$(sed -nE 's/.*\(build \. ([0-9]+)\).*/\1/p' "$ROOT/rivet.rktd" | head -n1)"
+[[ -n "$BUILD" ]] || {
+  echo "error: could not read build from rivet.rktd" >&2
+  exit 1
+}
+[[ -f "$KEY_PATH" ]] || {
+  echo "error: missing signing key $KEY_PATH" >&2
+  exit 1
+}
 
-# ---- build + sign the merged manifest with rivet's own signer ---------------
-MANIFEST="$DIST/update-manifest.json"
+raco rivet sign-manifest \
+  --application-id site.jrtx.keyward \
+  --version "$VERSION" \
+  --build "$BUILD" \
+  --channel stable \
+  --base-url "$BASE_URL" \
+  --key-id "$KEY_ID" \
+  --private-key "$KEY_PATH" \
+  --output "$DIST/update-manifest.json" \
+  --artifact "macos:arm64:dmg:$DIST/keyward-$VERSION-macos-arm64.dmg:app" \
+  --artifact "macos:x64:dmg:$DIST/keyward-$VERSION-macos-x64.dmg:app" \
+  --artifact "windows:x64:msi:$DIST/keyward-$VERSION-windows-x64.msi:app" \
+  --artifact "linux:x64:appimage:$DIST/keyward-$VERSION-linux-x86_64.AppImage:app" \
+  --artifact "linux:arm64:appimage:$DIST/keyward-$VERSION-linux-aarch64.AppImage:app" \
+  --rollback-allowed
 
-SCRIPT="$(mktemp /tmp/keyward-manifest-XXXXXX.rkt)"
-trap 'rm -f "$SCRIPT"' EXIT
-
-cat > "$SCRIPT" <<RKT
-#lang racket/base
-(require rivet/distribution
-         racket/date
-         racket/file
-         racket/format)
-(define version "$VERSION")
-(define base-url "$BASE_URL")
-(define dist (path->complete-path "$DIST"))
-(define key-path (path->complete-path "$KEY_PATH"))
-(define key-id "$KEY_ID")
-(define build (hash-ref (file->value (build-path (path->complete-path "$ROOT") "rivet.rktd")) 'build))
-
-(define (artifact platform architecture file installer)
-  (define path (build-path dist file))
-  (unless (file-exists? path)
-    (error 'make-update-manifest "missing installer: ~a" path))
-  ;; rivet's multi-component feed: keyward ships exactly one installable
-  ;; per platform × architecture — the component is 'app
-  (update-artifact platform architecture
-                   (string-append base-url "/" file)
-                   (sha256-file/hex path)
-                   (file-size path)
-                   installer
-                   '()
-                   'app))
-
-;; Handoff-shaped feed: dmg entries for both macOS architectures, the MSI
-;; for Windows, the AppImage entries for Linux. Portable zips, deb/rpm and
-;; the flatpak bundles are human/package-manager assets only.
-(define manifest
-  (update-manifest "site.jrtx.keyward"
-                   version
-                   build
-                   'stable
-                   ;; published-at: RFC 3339, second precision, UTC
-                   (let ([d (seconds->date (current-seconds) #f)])
-                     (format "~a-~a-~aT~a:~a:~aZ"
-                             (date-year d)
-                             (~r (date-month d) #:min-width 2 #:pad-string "0")
-                             (~r (date-day d) #:min-width 2 #:pad-string "0")
-                             (~r (date-hour d) #:min-width 2 #:pad-string "0")
-                             (~r (date-minute d) #:min-width 2 #:pad-string "0")
-                             (~r (date-second d) #:min-width 2 #:pad-string "0")))
-                   "0.0.0"
-                   #f
-                   #t
-                   100
-                   (list (artifact 'macos 'arm64
-                                   (format "keyward-~a-macos-arm64.dmg" version) 'dmg)
-                         (artifact 'macos 'x64
-                                   (format "keyward-~a-macos-x64.dmg" version) 'dmg)
-                         (artifact 'windows 'x64
-                                   (format "keyward-~a-windows-x64.msi" version) 'msi)
-                         (artifact 'linux 'x64
-                                   (format "keyward-~a-linux-x86_64.AppImage" version) 'appimage)
-                         (artifact 'linux 'arm64
-                                   (format "keyward-~a-linux-aarch64.AppImage" version) 'appimage))))
-
-;; write-signed-manifest validates the struct against the manifest schema
-;; before signing, so a malformed manifest fails the release instead of
-;; shipping something every client would reject.
-(call-with-output-file (build-path dist "update-manifest.json")
-  #:exists 'truncate/replace
-  (lambda (out)
-    (write-signed-manifest manifest
-                           (read-ed25519-private-key key-path)
-                           key-id
-                           out)
-    (newline out)))
-(printf "manifest: ~a (5 artifacts, key-id ~a)\\n"
-        (build-path dist "update-manifest.json") key-id)
-RKT
-
-# rivet must be installed for the signer; the publish job links a checkout
-racket "$SCRIPT"
-
-echo "manifest: $MANIFEST (macos arm64/x64 dmg + windows x64 msi + linux x86_64/aarch64 AppImage)"
+echo "manifest: $DIST/update-manifest.json (macos arm64/x64 dmg + windows x64 msi + linux x86_64/aarch64 AppImage)"
