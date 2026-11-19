@@ -1,7 +1,5 @@
 # Keyward
 
-**产品：**[产品主页](https://keyward.jrtx.site/) · **支持：**[问题与反馈](https://github.com/turlamai/keyward/issues) · [当前交付策略](https://github.com/turlamai/turlamai.github.io/blob/master/PORTFOLIO.zh-CN.md)
-
 [English](README.md) · **中文**
 
 给「自己会更新的桌面应用」保管发布签名密钥的本地保险库。
