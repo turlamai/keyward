@@ -1,7 +1,5 @@
 # Keyward
 
-**Product:** [Website](https://keyward.jrtx.site/) · **Support:** [Issues & feedback](https://github.com/turlamai/keyward/issues) · [Development policy](https://github.com/turlamai/turlamai.github.io/blob/master/PORTFOLIO.md)
-
 **English** · [中文](README.zh-CN.md)
 
 A local vault for the release-signing keys of self-updating desktop apps.
