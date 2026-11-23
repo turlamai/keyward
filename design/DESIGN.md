@@ -1,7 +1,7 @@
 # Keyward DESIGN.md — 视觉与交互契约（单一真源）
 
 原型（`design/prototype/`）与实现（`macos-host/` · `windows/` · `linux/`）都遵循本文件；改视觉先改这里，再同步三平台实现。
-Tokens 1:1 提取自 `macos-host/Sources/RivetHost/Theme.swift`（三平台共享的 family token 结构，亮暗两态均为 ThemeState 已验证状态）；产品站 `site/styles.css` 与之同源（bg/accent/line 一致，站点 `--line` 暗值 `#35322d` 与 app `#3a362f` 的微差以 app 为准）。表中唯一的非 Theme.swift 项是 `--accent-soft`，取自产品站同源暖色（app 端其职责由 selection/hover/badge 覆盖，原型保留备用）。
+原始 Tokens 提取自 `macos-host/Sources/RivetHost/Theme.swift`（三平台共享的 family token 结构，亮暗两态均为 ThemeState 已验证状态）；产品站 `site/styles.css` 与之同源（bg/accent/line 一致，站点 `--line` 暗值 `#35322d` 与 app `#3a362f` 的微差以 app 为准）。表中唯一的非 Theme.swift 项是 `--accent-soft`，取自产品站同源暖色（app 端其职责由 selection/hover/badge 覆盖，原型保留备用）。
 
 ## Brief（2026-11-11）
 
@@ -10,7 +10,7 @@ Tokens 1:1 提取自 `macos-host/Sources/RivetHost/Theme.swift`（三平台共�
 - **原型范围**（5 屏 × 亮/暗）：① 主视图（英雄屏：概览 tiles + 产品详情 header + Rotation 进行态 + Entries 全状态）② 首启空态（No vault selected + 信任文案）③ 轮换确认（Promote 危险操作对话框 + 安全默认）④ 快照浮层（loss protection + Restore）⑤ 散钥扫描浮层（告警态：路径/行号/指纹，永不显示值）。
   - **设置屏不在范围**：产品真实信息架构没有设置面——保险库选择走系统文件对话框（⌘O）、主题跟随系统、引擎零网络故无配置项；原型如实反映现有 IA，不为原型虚构产品没有的屏幕。
 - **Exit 条件**：5 屏关键状态齐（空态：屏②与 Entries/空节；告警态：屏⑤与 empty/empty:2 状态；进行态：轮换 Phase 1）+ 交互逻辑定稿 + HIG 清单全过 + 用户评审通过；验收后实物截图才能作对外素材。
-- **不在范围**：新功能、RVT1 契约变更（不动 `rivet-schema.json` / `racket/backend.rkt`）、商业/定价 UI、新配色体系。
+- **不在范围**：新功能、RVT1 契约变更（不动 `rivet-schema.json` / `app/backend.rkt`）、商业/定价 UI、新配色体系。
 
 ## 设计原则（HIG 内核）
 
@@ -20,21 +20,29 @@ Tokens 1:1 提取自 `macos-host/Sources/RivetHost/Theme.swift`（三平台共�
 - **防错一致**：Generate / Stage / Promote / Discard / Delete 全部确认对话框；**Return 永远落在 Cancel**（安全动作拿视觉主位），破坏性动作需显式点击；删除文案先讲条目用途（purpose 提示），再讲可恢复（快照先行）。
 - **层级克制**：bg < sidebar/surface < badge 三层表面足够；饱和色只上 glyph 与主按钮，选中/悬停是 quiet fill；边框不随状态变色（唯一许可例外：EntryCard 悬停描边——复制的唯一入口需要引导）。
 
-## Tokens（语义；值不在此复制）
+## Tokens（品牌基线与原型可读性修订）
 
-值类 token 真源 = `macos-host/Sources/RivetHost/Theme.swift`（三平台共享 family token 结构，亮暗两态均为 ThemeState 已验证状态）；产品站 `site/styles.css` 与之同源（bg/accent/line 一致，站点 `--line` 暗值 `#35322d` 与 app `#3a362f` 的微差以 app 为准）；原型 `design/prototype/shared.css` 与 Theme.swift 一一对应，本表只记语义。
+| Token | Light | Dark | 用途 |
+|---|---|---|---|
+| `--bg` | `#faf7f2` | `#1b1a18` | 画布 |
+| `--sidebar` | `#f3eee6` | `#24221f` | 侧栏/状态栏底 |
+| `--surface` | `#ffffff` | `#2e2b27` | 卡片/浮层 |
+| `--line` | `#e8e2d9` | `#3a362f` | 分隔/描边 |
+| `--ink` | `#241f1b` | `#ece9e2` | 主文字 |
+| `--ink-2` | `#6b6660` | `#a6a099` | 次级文字 |
+| `--ink-3` | `#a8a099` | `#6b6660` | 辅助文字/占位 |
+| `--accent` | `#c15f3c` | `#d08a6e` | 品牌 glyph/主按钮/Copy 入口 |
+| `--accent-soft` | `#f7e5dd` | `#3a2d27` | accent 弱底 |
+| `--selection` | accent @10% | accent @16% | 选中 quiet fill |
+| `--hover` | accent @6% | accent @10% | 悬停 quiet fill |
+| `--badge` | `#f0ebe2` | `#3a362f` | KVChip/徽标底 |
+| `--ok` | `#2e7d32` | `#81c784` | 配对/检查通过 |
+| `--warn` | `#b26a00` | `#ffb74d` | 注意/空值/破坏性 |
+| `--neutral` | `#8e8e93` | `#98989e` | 空节/无键 |
 
-| Token | 语义 |
-|---|---|
-| `--bg --sidebar --surface --line` | 画布 / 侧栏状态栏 / 卡片浮层 / 分隔描边 |
-| `--ink --ink-2 --ink-3` | 主/次级/辅助文字三档 |
-| `--accent --accent-soft` | 品牌 glyph/主按钮/Copy 入口 + 弱底（`--accent-soft` 是唯一非 Theme.swift 项，取自产品站同源暖色；app 端其职责由 selection/hover/badge 覆盖，原型保留备用） |
-| `--selection --hover --badge` | 选中/悬停 quiet fill（accent alpha）+ KVChip 徽标底 |
-| `--ok --warn --neutral` | 状态语义：配对/检查通过 / 注意/空值/破坏性 / 空节/无键 |
-
-- **字体**：`system-ui, -apple-system, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei"`；正文 13px/1.5，产品名标题 22px/700，pane 标题 17px，次级 12px，辅助 10–11px；**entry 名、指纹、路径、时间戳一律 mono**（`ui-monospace, SFMono-Regular, Menlo, Consolas`）——标识符与正文不同字形是这产品可扫读性的关键。
-- **几何**：侧栏 280px · 状态栏 28px（Theme.swift 实测值）；详情大卡圆角 14px · 卡片/控件 8px · chip 6px。**间距节奏**：4/8/12/16/20。**动效**：120ms easeOut，不过度。
-- **语言**：界面文案英文（三平台现状 UI 语言）；本文件与原型注释中文。图标一律内联 SVG，不用位图。
+- **字体**：`system-ui, -apple-system, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei"`；正文 16px/1.55，产品名标题 32px/700（窄窗口 28px），pane 标题 20px，按钮 14px，条目标识符与用途 13px，次级 12–13px；**entry 名、指纹、路径、时间戳一律 mono**（`ui-monospace, SFMono-Regular, Menlo, Consolas`）——标识符与正文不同字形是这产品可扫读性的关键。
+- **几何**：原型侧栏 256px（中窗口 216px，窄窗口收敛为顶部产品选择）；状态栏随内容自然增高；详情大卡圆角 14px · 卡片/控件 8px · chip 6px。**间距节奏**：4/8/12/16/20。**动效**：180ms ease-out，仅用于操作与对话框反馈；遵循 prefers-reduced-motion。
+- **语言**：界面文案英文（三平台现状 UI 语言）；本文件中文，新增代码注释英文。图标一律内联 SVG，不用位图。
 
 ## 组件词汇
 
@@ -64,3 +72,71 @@ Tokens 1:1 提取自 `macos-host/Sources/RivetHost/Theme.swift`（三平台共�
 
 差异声明纪律：宿主特例必须先写进本节才能实现；未声明的宿主差异按违约处理
 （案例：taskly 漂移台账 D8）。
+
+
+## 本轮原型优化（2026-11-14）
+
+本节更新本项目的设计基线；上文引用的宿主路径与历史已验证状态属于既有记录，不代表本轮已核对宿主实现。本轮仅修改 OpenDesign 原型，未修改引擎或三平台宿主，也未完成 git 落账。
+
+### 入口与范围
+
+- `index.html` 直接进入主视图，取代单独的评审链接列表；侧栏提供 Snapshots、Scan for stray keys 与 Choose vault 入口。
+- `prototype/main.html` 保留主视图独立入口。
+- `prototype/onboarding.html` 为未选择保险库状态，可打开示例保险库。
+- `prototype/rotation.html` 直接进入 Promote 确认。
+- `prototype/snapshots.html` 与 `prototype/stray-scan.html` 直接进入相应对话框，关闭后返回同一应用。
+- 五个入口共用 `prototype/shared.css` 与 `prototype/app.js`，不再复制背景结构与状态逻辑。
+- 无设置页、定价页、平台切换或设计演示控制面板。英文产品文案保留。
+
+### 视觉方向与可读性
+
+延续暖纸色、陶土色、系统字体与等宽标识符，以更明确的标题、正常流排版和分隔线整理信息。品牌背景是既有契约的延续；此选择并非新增通用配色方案。
+
+原型采用以下可读性修订，后续落账后宿主实现需对齐；不再声称 token 与当前宿主 1:1：
+
+| 用途 | Light | Dark |
+|---|---|---|
+| 品牌 glyph 底色 `--brand` | `#c15f3c` | `#d08a6e` |
+| 操作与聚焦 `--accent` | `#a8492b` | `#e6a388` |
+| 次级文字 `--ink-2` | `#6b6660` | `#bdb6ae` |
+| 辅助文字 `--muted` | `#746c64` | `#b4aba1` |
+| 分隔线 `--line` | `#e8e2d9` | `#484139` |
+| 成功文字 `--ok` | `#28692d` | `#9bd69e` |
+| 告警文字 `--warn` | `#855000` | `#ffc36a` |
+
+不将原 `--ink-3` 低对比色用于说明文字。明暗模式跟随系统，无产品内主题切换。尺寸与动作色集中定义；不使用渐变背景、装饰阴影堆叠或静态伪悬停。
+
+主层级为产品标题 → Active key 元信息 → 两阶段轮换指引 → Entries。产品侧栏同时显示状态文字与状态点。概览保留产品数、配对数、需注意产品数；快照移至独立操作入口，条目数由实际示例条目计算，不沿用原硬编码 8 条。
+
+### 唯一轮换顺序
+
+1. Stage：保留当前签名密钥，准备并检查 next pair。
+2. 发布信任：将 next public anchors 放入应用，使用旧密钥签名并发布 phase-1 release。
+3. 该版本发布后，将 CI signing secret 切换到 staged private key。
+4. Promote：用户明确确认发布与 CI 交接均已完成后，替换 active entries 并清理 NEXT entries。
+
+Pairing 通过只是 Promote 的条件之一，不能代表外部版本已经发布或 CI 已更新。确认框分别收集这两项交接确认；界面不声称自动验证外部系统。每次状态变更先保存可恢复的示例快照。
+
+### 原型行为边界
+
+- 页面明确标识 Interactive prototype / sample data。没有真实密钥值，也不生成、导入或复制真实密钥。
+- Choose vault 打开明确披露的示例数据，不伪造系统文件选择器；无文件系统读写。
+- Copy 只模拟披露与 30 秒有效期；未点击时不显示已复制，不写剪贴板，不承诺清除用户真实剪贴板，到零不循环。生产实现仍须遵守真实复制披露与清除规则。
+- Deep Check 有处理中与结果反馈，但只检查示例元信息；结果明确说明未执行密码学验证。
+- Stage / Promote / Discard / Delete / Restore 使用原生模态确认；Cancel 默认聚焦，Return 取消，Escape 关闭。Promote 需已配对并逐项确认发布与 CI 交接。
+- Add / Import 只录入条目名称和用途。Add 创建空值元信息；Import 用示例状态代替真实材料导入，不提供真实密钥输入框。名称校验要求大写字母开头、只含大写字母/数字/下划线，且同产品唯一。
+- 所有变更共享内存状态；产品列表、条目计数、注意状态及快照一起更新。恢复会替换整个示例保险库，并先保存恢复前状态。
+- 扫描只呈现三条固定示例发现，明确说明未访问文件夹；只显示路径、行号、类型与指纹。
+- 刷新或在不同独立入口重新打开会重置示例状态；不承诺持久化。
+
+### 键盘与窗口
+
+- 可见聚焦样式；按钮均为真实语义控件，Copy 常驻，不依赖悬停。
+- Cmd/Ctrl+O 打开保险库选择说明；Cmd/Ctrl+R 运行示例检查；Cmd/Ctrl+L 打开快照。
+- 关闭或变更后焦点返回可用控制，筛选导致条目消失时回到主操作。
+- 大窗口侧栏；窄窗口使用顶部产品选择。375 / 768 / 1024 / 1440 宽度段按内容重排，不缩放整页，不添加移动端设备壳。
+- 对话框提供关闭入口，正文自然换行，条目详情完整显示名称和用途。输入错误仅在提交失败后出现。
+
+### 交付状态
+
+本轮写入可编辑源文件与交互逻辑；未运行浏览器预览、截图或自动验收，未宣称达成原 Exit 条件中的用户评审通过。真实文件操作、密码学行为、剪贴板托管及三平台实现一致性仍须在产品实现阶段验证。
