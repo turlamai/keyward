@@ -23,8 +23,19 @@ Key work — Ed25519 public-key derivation, key parsing and the crypto
 primitives behind Deep Check and the update trust policy — runs through
 the Racket `crypto` package's libcrypto factory
 ([racket/crypto](https://github.com/racket/crypto)), distributed under
-the Apache License 2.0. It links against the platform's OpenSSL
-(libcrypto), which ships with the operating system.
+the Apache License 2.0. It links against libcrypto through FFI. The
+Windows package carries its own copy from the Racket distribution (next
+section); Windows ships no system libcrypto.
+
+## Libraries shipped with the Racket distribution (Windows package)
+
+The Windows package carries these libraries with its embedded runtime,
+exactly as the Racket distribution ships them:
+
+- OpenSSL 3.4.1 (`libeay32.dll`, `ssleay32.dll` — the distribution keeps
+  the legacy file names), Apache License 2.0.
+- GNU libiconv (`libiconv-2.dll`), GNU Lesser General Public License,
+  version 2.1.
 
 ## GTK 4 and GLib
 
