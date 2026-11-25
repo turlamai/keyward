@@ -102,7 +102,10 @@ MC4CAQAwBQYDK2VwBCIEIHohfxFKqay8sLtRBVAFFZLXXOq
 PUBLIC_KEY = ok
 EOF
   )
-(define m (make-fixture! messy))
+;; On a CRLF checkout the here-string keeps a carriage return per line, and
+;; the store would see each line doubled; strip it so the fixture is the
+;; same bytes on every checkout.
+(define m (make-fixture! (string-replace messy "\r" "")))
 ;; the PEM body and footer lines are orphans; line numbers only
 (check-equal? (store-orphan-lines m) (list 3 4))
 ;; and they are NOT visible as entries

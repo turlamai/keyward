@@ -2,7 +2,7 @@
 Type=Application
 Name=Keyward
 Comment=Local vault for release-signing keys
-Exec=RivetHost
+Exec=keyward
 Icon=site.jrtx.keyward
 Terminal=false
 Categories=Utility;Security;

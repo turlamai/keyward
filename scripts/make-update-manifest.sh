@@ -4,9 +4,9 @@
 # shared/spec/UPDATE.md).
 #
 # Usage: scripts/make-update-manifest.sh <tag> <dist-dir> <key-der-path>
-#   <tag>          release tag, e.g. v0.3.0 (must match the VERSION file,
-#                  rivet.rktd, and the CHANGELOG — release jobs run
-#                  scripts/check-release-version.sh before packaging)
+#   <tag>          release tag, e.g. v0.1.0 (must match the VERSION file,
+#                  racket/core/version.rkt and the CHANGELOG — release jobs
+#                  run scripts/check-release-version.sh before packaging)
 #   <dist-dir>     directory containing the release artifacts, i.e. the
 #                  names the release pipeline produces:
 #                    keyward-<version>-macos-arm64.dmg
@@ -45,11 +45,13 @@ cd "$ROOT"
 KEY_ID="${RIVET_UPDATE_KEY_ID:-keyward-2026-11}"
 BASE_URL="${RELEASE_ASSET_BASE_URL:-https://github.com/turlamai/keyward/releases/download/$TAG}"
 
-raco rivet check-release-version "$TAG"
+# Identity lives in racket/core/version.rkt since the glaze move (#34); the
+# family preflight replaces raco rivet check-release-version.
+bash scripts/check-release-version.sh "$TAG"
 
-BUILD="$(sed -nE 's/.*\(build \. ([0-9]+)\).*/\1/p' "$ROOT/rivet.rktd" | head -n1)"
+BUILD="$(sed -nE 's/^\(define app-build ([0-9]+)\)$/\1/p' "$ROOT/racket/core/version.rkt" | head -n1)"
 [[ -n "$BUILD" ]] || {
-  echo "error: could not read build from rivet.rktd" >&2
+  echo "error: could not read app-build from racket/core/version.rkt" >&2
   exit 1
 }
 [[ -f "$KEY_PATH" ]] || {

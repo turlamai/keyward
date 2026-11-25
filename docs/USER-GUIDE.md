@@ -12,7 +12,7 @@ Free release-infrastructure tool under AGPL-3.0; no commercial activation.
 
 Desktop previews for macOS, Windows and Linux. Use a synthetic disposable vault before connecting real release credentials.
 
-Use [official Releases](https://github.com/turlamai/keyward/releases), select an explicitly listed OS/architecture asset, read its release notes and check supplied checksums. An absent asset/platform is not a delivery promise. Preview builds may lack publisher signing or notarization; do not disable system-wide security protections to install them.
+Use [official Releases](https://github.com/turlamai/keyward/releases), select an explicitly listed OS/architecture asset, read its release notes and check supplied checksums. An absent asset/platform is not a delivery promise. macOS builds are Developer ID-signed and notarized. The Windows installer is not Authenticode-signed and the Linux packages are not vendor-signed for now: verify them against `SHA256SUMS` before installing, expect a SmartScreen warning on Windows, and do not disable system-wide security protections to install them.
 
 ## Your first successful session
 

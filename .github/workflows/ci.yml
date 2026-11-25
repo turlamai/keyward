@@ -15,9 +15,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
-# Pinned so CI validates the same rivet the release workflow ships with.
+# Pinned so CI validates the same rivet the glaze carrier ships with (same
+# pin as host-ci.yml / packaged-smoke.yml / release.yml). The glaze carrier
+# itself is owned by host-ci.yml since #34 (rivet → glaze).
 env:
-  RIVET_PIN: c1f0d921e2136c0cfb2c1c1f6d273f2b26222a19
+  RIVET_PIN: 10eb550d45f3a1be4b1608d6b0035656e1e5d7a0
 
 jobs:
   engine:
@@ -25,10 +27,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # Release preflight on every CI run: VERSION == rivet.rktd ==
-      # CHANGELOG must hold on main, not only at release time. Runs
+      # Release preflight on every CI run: VERSION == racket/core/version.rkt
+      # == CHANGELOG must hold on main, not only at release time. Runs
       # without racket, so it goes before the toolchain setup.
-      - name: Verify release version alignment (VERSION == rivet.rktd == CHANGELOG)
+      - name: Verify release version alignment (VERSION == version.rkt == CHANGELOG)
         run: bash scripts/check-release-version.sh
       - uses: Bogdanp/setup-racket@v1.15
         with:
@@ -40,94 +42,3 @@ jobs:
         run: raco test tests/
       - name: Backend compiles against the RVT1 contract
         run: raco make racket/backend.rkt
-
-  macos:
-    name: macOS host build
-    needs: engine
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: Bogdanp/setup-racket@v1.15
-        with:
-          version: stable
-          distribution: full
-      - run: raco pkg install --auto --no-docs crypto 'https://github.com/turlamai/rivet.git#${{ env.RIVET_PIN }}'
-      - run: raco rivet build
-
-  windows-host:
-    name: Windows host (WinUI 3 build)
-    needs: engine
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Racket CS 9.3
-        uses: Bogdanp/setup-racket@v1.15
-        with:
-          architecture: x64
-          distribution: full
-          variant: CS
-          version: '9.3'
-      - name: Install Rivet (catalog)
-        shell: bash
-        run: raco pkg install --auto --no-docs crypto 'https://github.com/turlamai/rivet.git#${{ env.RIVET_PIN }}'
-      - name: Build host
-        shell: pwsh
-        run: raco rivet build
-      - name: Launch smoke
-        shell: pwsh
-        run: |
-          # The backend boots embedded (no display needed); a windowed exe
-          # that survives 10 s proves runtime layout + RPC handshake work.
-          $proc = Start-Process -FilePath ".\.rivet\stage\RivetHost.exe" -PassThru
-          Start-Sleep -Seconds 10
-          if ($proc.HasExited) {
-            Write-Error "RivetHost exited during the launch smoke"
-            exit 1
-          }
-          Stop-Process -Id $proc.Id
-
-  linux-host:
-    name: Linux host (GTK4 build)
-    needs: engine
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Racket CS 9.3
-        uses: Bogdanp/setup-racket@v1.15
-        with:
-          architecture: x64
-          distribution: full
-          variant: CS
-          version: '9.3'
-      - name: Install GTK toolchain
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake ninja-build pkg-config \
-            libgtk-4-dev libadwaita-1-dev libjson-glib-dev \
-            libsecret-1-dev libglib2.0-dev
-      # Builds and caches the embeddable Racket CS runtime and exports
-      # RIVET_RACKET_* (rivet's own composite action). The ref is a literal:
-      # `uses:` cannot expand ${{ env.RIVET_PIN }} — keep it in sync with
-      # RIVET_PIN above when bumping rivet.
-      - name: Set up embeddable Racket CS
-        uses: turlamai/rivet/.github/actions/setup-embed-racket@c1f0d921e2136c0cfb2c1c1f6d273f2b26222a19
-      # Installed after the embeddable runtime so the catalog dependency
-      # closure (cext-lib, crypto-lib, keel) resolves against the minimal
-      # build — it ships no packages of its own. crypto backs keyward's
-      # Ed25519 key work.
-      - name: Install Rivet (catalog) and backend packages
-        run: |
-          raco pkg install --auto --no-docs 'https://github.com/turlamai/rivet.git#${{ env.RIVET_PIN }}'
-          raco pkg install --auto --no-docs crypto
-      - name: Toolchain doctor
-        run: raco rivet doctor --json
-      - name: Build host
-        run: raco rivet build
-      - name: Headless boot smoke
-        run: |
-          sudo apt-get install -y xvfb
-          xvfb-run -a ./.rivet/stage/RivetHost &
-          APP_PID=$!
-          sleep 8
-          kill -0 $APP_PID
-          kill $APP_PID

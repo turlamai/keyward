@@ -76,7 +76,7 @@ Omaha，全都是这一套）分三步：
 ```bash
 git clone https://github.com/turlamai/keyward
 cd keyward
-raco rivet package     # 产物在 dist/keyward.app
+raco glaze build --name keyward --entry host/main.rkt --installer   # 产物在 dist/
 ```
 
 把 `dist/keyward.app` 拖进"应用程序"即可。

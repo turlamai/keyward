@@ -8,9 +8,7 @@ of a private signing key into an unattended network capability.
 Keyward remains **manual-update only**: no code path contacts a release
 server, and no implementation may claim automatic update support until the
 issue #15 ladder (platform handoffs, upgrade CI, the Check for Updates UI)
-passes end to end. The release pipeline still builds with
-`raco rivet release --without-updates`; rivet's per-platform update
-emission stays off.
+passes end to end. Each tag release publishes the signed feed (`scripts/make-update-manifest.sh`), and no shipped build contains an updater.
 
 The release-signing prerequisites are now in place. The production Ed25519
 update trust root is pinned in `racket/update-trust.rkt` (key id

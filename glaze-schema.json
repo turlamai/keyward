@@ -1,0 +1,647 @@
+{
+  "format": "glaze-schema",
+  "format-version": 1,
+  "glz": 1,
+  "routes": [
+    {
+      "method": "POST",
+      "path": "/api/rpc/store-path"
+    },
+    {
+      "method": "POST",
+      "path": "/api/rpc/store-open"
+    },
+    {
+      "method": "POST",
+      "path": "/api/rpc/store-info"
+    },
+    {
+      "method": "POST",
+      "path": "/api/rpc/check-store"
+    },
+    {
+      "method": "POST",
+      "path": "/api/rpc/entry-list"
+    },
+    {
+      "method": "POST",
+      "path": "/api/rpc/entry-set"
+    },
+    {
+      "method": "POST",
+      "path": "/api/rpc/entry-delete"
+    },
+    {
+      "method": "POST",
+      "path": "/api/rpc/entry-import-file"
+    },
+    {
+      "method": "POST",
+      "path": "/api/rpc/keypair-generate"
+    },
+    {
+      "method": "POST",
+      "path": "/api/rpc/rotation-start"
+    },
+    {
+      "method": "POST",
+      "path": "/api/rpc/rotation-promote"
+    },
+    {
+      "method": "POST",
+      "path": "/api/rpc/rotation-cancel"
+    },
+    {
+      "method": "POST",
+      "path": "/api/rpc/rotation-status"
+    },
+    {
+      "method": "POST",
+      "path": "/api/rpc/snapshot-list"
+    },
+    {
+      "method": "POST",
+      "path": "/api/rpc/snapshot-restore"
+    },
+    {
+      "method": "POST",
+      "path": "/api/rpc/stray-scan-tree"
+    },
+    {
+      "method": "POST",
+      "path": "/api/rpc/update-check"
+    },
+    {
+      "method": "GET",
+      "path": "/api/health"
+    },
+    {
+      "method": "GET",
+      "path": "/api/host/context"
+    },
+    {
+      "method": "POST",
+      "path": "/api/host/copy"
+    },
+    {
+      "method": "GET",
+      "path": "/api/host/clipboard"
+    },
+    {
+      "method": "POST",
+      "path": "/api/host/e2e-fixtures"
+    },
+    {
+      "method": "POST",
+      "path": "/api/host/e2e-stray-seed"
+    },
+    {
+      "method": "POST",
+      "path": "/api/host/e2e-clipboard"
+    },
+    {
+      "method": "POST",
+      "path": "/api/host/e2e-import-seed"
+    },
+    {
+      "method": "POST",
+      "path": "/api/host/e2e-report"
+    },
+    {
+      "method": "POST",
+      "path": "/api/host/e2e-reset"
+    },
+    {
+      "method": "POST",
+      "path": "/api/dialog/open"
+    },
+    {
+      "method": "POST",
+      "path": "/api/dialog/save"
+    },
+    {
+      "method": "POST",
+      "path": "/api/dialog/message"
+    },
+    {
+      "method": "POST",
+      "path": "/api/dialog/ask"
+    }
+  ],
+  "schema": {
+    "commands": [
+      {
+        "errors": [
+          "invalid-args",
+          "capability-denied",
+          "token-required",
+          "timed-out",
+          "cancelled",
+          "internal"
+        ],
+        "name": "dialogAsk",
+        "parameters": [],
+        "result": {
+          "kind": "scalar",
+          "name": "Value"
+        }
+      },
+      {
+        "errors": [
+          "invalid-args",
+          "capability-denied",
+          "token-required",
+          "timed-out",
+          "cancelled",
+          "internal"
+        ],
+        "name": "dialogMessage",
+        "parameters": [],
+        "result": {
+          "kind": "scalar",
+          "name": "Value"
+        }
+      },
+      {
+        "errors": [
+          "invalid-args",
+          "capability-denied",
+          "token-required",
+          "timed-out",
+          "cancelled",
+          "internal"
+        ],
+        "name": "dialogOpen",
+        "parameters": [],
+        "result": {
+          "kind": "scalar",
+          "name": "Value"
+        }
+      },
+      {
+        "errors": [
+          "invalid-args",
+          "capability-denied",
+          "token-required",
+          "timed-out",
+          "cancelled",
+          "internal"
+        ],
+        "name": "dialogSave",
+        "parameters": [],
+        "result": {
+          "kind": "scalar",
+          "name": "Value"
+        }
+      },
+      {
+        "errors": [],
+        "name": "health",
+        "parameters": [],
+        "result": {
+          "kind": "scalar",
+          "name": "Value"
+        }
+      },
+      {
+        "errors": [],
+        "name": "hostClipboard",
+        "parameters": [],
+        "result": {
+          "kind": "scalar",
+          "name": "Value"
+        }
+      },
+      {
+        "errors": [],
+        "name": "hostContext",
+        "parameters": [],
+        "result": {
+          "kind": "scalar",
+          "name": "Value"
+        }
+      },
+      {
+        "errors": [],
+        "name": "hostCopy",
+        "parameters": [
+          {
+            "name": "product",
+            "type": {
+              "kind": "scalar",
+              "name": "String"
+            }
+          },
+          {
+            "name": "name",
+            "type": {
+              "kind": "scalar",
+              "name": "String"
+            }
+          },
+          {
+            "name": "format",
+            "type": {
+              "kind": "scalar",
+              "name": "String"
+            }
+          }
+        ],
+        "result": {
+          "kind": "scalar",
+          "name": "Value"
+        }
+      },
+      {
+        "errors": [],
+        "name": "hostE2eClipboard",
+        "parameters": [
+          {
+            "name": "product",
+            "type": {
+              "kind": "scalar",
+              "name": "String"
+            }
+          },
+          {
+            "name": "name",
+            "type": {
+              "kind": "scalar",
+              "name": "String"
+            }
+          }
+        ],
+        "result": {
+          "kind": "scalar",
+          "name": "Bool"
+        }
+      },
+      {
+        "errors": [],
+        "name": "hostE2eFixtures",
+        "parameters": [],
+        "result": {
+          "kind": "scalar",
+          "name": "Value"
+        }
+      },
+      {
+        "errors": [],
+        "name": "hostE2eImportSeed",
+        "parameters": [],
+        "result": {
+          "kind": "scalar",
+          "name": "String"
+        }
+      },
+      {
+        "errors": [],
+        "name": "hostE2eReport",
+        "parameters": [
+          {
+            "name": "payload",
+            "type": {
+              "kind": "scalar",
+              "name": "Value"
+            }
+          }
+        ],
+        "result": {
+          "kind": "scalar",
+          "name": "Bool"
+        }
+      },
+      {
+        "errors": [],
+        "name": "hostE2eReset",
+        "parameters": [],
+        "result": {
+          "kind": "scalar",
+          "name": "Bool"
+        }
+      },
+      {
+        "errors": [],
+        "name": "hostE2eStraySeed",
+        "parameters": [],
+        "result": {
+          "kind": "scalar",
+          "name": "String"
+        }
+      },
+      {
+        "errors": [],
+        "name": "rpcCheckStore",
+        "parameters": [],
+        "result": {
+          "kind": "scalar",
+          "name": "Value"
+        }
+      },
+      {
+        "errors": [],
+        "name": "rpcEntryDelete",
+        "parameters": [
+          {
+            "name": "product",
+            "type": {
+              "kind": "scalar",
+              "name": "String"
+            }
+          },
+          {
+            "name": "name",
+            "type": {
+              "kind": "scalar",
+              "name": "String"
+            }
+          }
+        ],
+        "result": {
+          "kind": "scalar",
+          "name": "Bool"
+        }
+      },
+      {
+        "errors": [],
+        "name": "rpcEntryImportFile",
+        "parameters": [
+          {
+            "name": "product",
+            "type": {
+              "kind": "scalar",
+              "name": "String"
+            }
+          },
+          {
+            "name": "name",
+            "type": {
+              "kind": "scalar",
+              "name": "String"
+            }
+          },
+          {
+            "name": "filePath",
+            "type": {
+              "kind": "scalar",
+              "name": "String"
+            }
+          }
+        ],
+        "result": {
+          "kind": "scalar",
+          "name": "String"
+        }
+      },
+      {
+        "errors": [],
+        "name": "rpcEntryList",
+        "parameters": [
+          {
+            "name": "product",
+            "type": {
+              "kind": "scalar",
+              "name": "String"
+            }
+          }
+        ],
+        "result": {
+          "kind": "scalar",
+          "name": "Value"
+        }
+      },
+      {
+        "errors": [],
+        "name": "rpcEntrySet",
+        "parameters": [
+          {
+            "name": "product",
+            "type": {
+              "kind": "scalar",
+              "name": "String"
+            }
+          },
+          {
+            "name": "name",
+            "type": {
+              "kind": "scalar",
+              "name": "String"
+            }
+          },
+          {
+            "name": "value",
+            "type": {
+              "kind": "scalar",
+              "name": "String"
+            }
+          }
+        ],
+        "result": {
+          "kind": "scalar",
+          "name": "String"
+        }
+      },
+      {
+        "errors": [],
+        "name": "rpcKeypairGenerate",
+        "parameters": [
+          {
+            "name": "product",
+            "type": {
+              "kind": "scalar",
+              "name": "String"
+            }
+          }
+        ],
+        "result": {
+          "kind": "scalar",
+          "name": "Value"
+        }
+      },
+      {
+        "errors": [],
+        "name": "rpcRotationCancel",
+        "parameters": [
+          {
+            "name": "product",
+            "type": {
+              "kind": "scalar",
+              "name": "String"
+            }
+          }
+        ],
+        "result": {
+          "kind": "scalar",
+          "name": "Bool"
+        }
+      },
+      {
+        "errors": [],
+        "name": "rpcRotationPromote",
+        "parameters": [
+          {
+            "name": "product",
+            "type": {
+              "kind": "scalar",
+              "name": "String"
+            }
+          }
+        ],
+        "result": {
+          "kind": "scalar",
+          "name": "Value"
+        }
+      },
+      {
+        "errors": [],
+        "name": "rpcRotationStart",
+        "parameters": [
+          {
+            "name": "product",
+            "type": {
+              "kind": "scalar",
+              "name": "String"
+            }
+          }
+        ],
+        "result": {
+          "kind": "scalar",
+          "name": "Value"
+        }
+      },
+      {
+        "errors": [],
+        "name": "rpcRotationStatus",
+        "parameters": [
+          {
+            "name": "product",
+            "type": {
+              "kind": "scalar",
+              "name": "String"
+            }
+          }
+        ],
+        "result": {
+          "kind": "scalar",
+          "name": "Value"
+        }
+      },
+      {
+        "errors": [],
+        "name": "rpcSnapshotList",
+        "parameters": [],
+        "result": {
+          "kind": "scalar",
+          "name": "Value"
+        }
+      },
+      {
+        "errors": [],
+        "name": "rpcSnapshotRestore",
+        "parameters": [
+          {
+            "name": "stamp",
+            "type": {
+              "kind": "scalar",
+              "name": "String"
+            }
+          }
+        ],
+        "result": {
+          "kind": "scalar",
+          "name": "Bool"
+        }
+      },
+      {
+        "errors": [],
+        "name": "rpcStoreInfo",
+        "parameters": [],
+        "result": {
+          "kind": "scalar",
+          "name": "Value"
+        }
+      },
+      {
+        "errors": [],
+        "name": "rpcStoreOpen",
+        "parameters": [
+          {
+            "name": "path",
+            "type": {
+              "kind": "scalar",
+              "name": "String"
+            }
+          }
+        ],
+        "result": {
+          "kind": "scalar",
+          "name": "String"
+        }
+      },
+      {
+        "errors": [],
+        "name": "rpcStorePath",
+        "parameters": [],
+        "result": {
+          "kind": "scalar",
+          "name": "String"
+        }
+      },
+      {
+        "errors": [],
+        "name": "rpcStrayScanTree",
+        "parameters": [
+          {
+            "name": "dir",
+            "type": {
+              "kind": "scalar",
+              "name": "String"
+            }
+          }
+        ],
+        "result": {
+          "kind": "scalar",
+          "name": "Value"
+        }
+      },
+      {
+        "errors": [],
+        "name": "rpcUpdateCheck",
+        "parameters": [
+          {
+            "name": "manifest",
+            "type": {
+              "kind": "scalar",
+              "name": "String"
+            }
+          },
+          {
+            "name": "installKind",
+            "type": {
+              "kind": "scalar",
+              "name": "String"
+            }
+          },
+          {
+            "name": "linuxPackageFormat",
+            "type": {
+              "kind": "scalar",
+              "name": "String"
+            }
+          }
+        ],
+        "result": {
+          "kind": "scalar",
+          "name": "Value"
+        }
+      }
+    ],
+    "contract": 1,
+    "enums": [],
+    "events": [],
+    "id": "glaze-routes",
+    "records": [],
+    "revision": 1,
+    "states": []
+  }
+}

@@ -1,0 +1,159 @@
+name: packaged launch smoke
+
+# keyward#34 S5: build the glaze package on every declared platform and
+# launch the packaged program (not `racket host/main.rkt`). This is evidence
+# only: nothing is uploaded as a release asset and no tag is made.
+#
+# Two judgements on the packaged program:
+#   1. production launch survives a window of seconds (process-level);
+#   2. KEYWARD_SELFTEST=1: the program runs the 19-step product journey in
+#      its own window, on the production path (native transport, capability,
+#      packaged engine), and exits with the verdict. A surviving process does
+#      not prove the page rendered.
+# Pins mirror host-ci.yml.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  GLAZE_PIN: a3faa498155a30d53f4388e88bd3e39751caaae2
+  GLAZE_RIVET_PIN: 10eb550d45f3a1be4b1608d6b0035656e1e5d7a0
+  RIVET_PIN: 10eb550d45f3a1be4b1608d6b0035656e1e5d7a0
+  WEBKIT_DISABLE_DMABUF_RENDERER: '1'
+  SURVIVAL_SECONDS: '8'
+  SELFTEST_SECONDS: '360'
+
+concurrency:
+  group: packaged-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  package:
+    name: packaged launch (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Bogdanp/setup-racket@v1.15
+        with:
+          version: stable
+          distribution: full
+          # Auto-detection installs x64 on arm64 runners (Exec format error);
+          # always pass the matrix architecture explicitly.
+          architecture: ${{ contains(matrix.os, 'arm') && 'arm64' || 'x64' }}
+      - name: Export trusted Mozilla CA roots for Windows Racket
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $bundle = Join-Path $env:RUNNER_TEMP 'keyward-mozilla-roots.pem'
+          $js = 'const tls=require("node:tls"),fs=require("node:fs"); if(tls.rootCertificates.length<50) process.exit(2); fs.writeFileSync(process.argv[1],tls.rootCertificates.join("\n")+"\n",{flag:"wx"});'
+          node -e $js $bundle
+          if ($LASTEXITCODE -ne 0 -or -not (Test-Path $bundle -PathType Leaf)) {
+            throw "Unable to export CA roots; refusing insecure TLS fallback"
+          }
+          "KEYWARD_CI_CA_BUNDLE=$bundle" >> $env:GITHUB_ENV
+      - name: Install pinned Keel + Rivet + Glaze + crypto (Windows, verified TLS)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: racket scripts/ci-install-windows-deps.rkt
+      - name: Install pinned Rivet + Glaze + crypto (catalog)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          raco pkg install --auto --no-docs "https://github.com/turlamai/rivet.git#${GLAZE_RIVET_PIN}"
+          raco pkg install --auto --no-docs "https://github.com/turlamai/glaze.git#${GLAZE_PIN}"
+          raco pkg install --auto --no-docs crypto
+      - name: Linux webview runtime deps
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -o Acquire::ForceIPv4=true -o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30
+          sudo apt-get install -y -o DPkg::Lock::Timeout=120 -o Acquire::ForceIPv4=true -o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 libgtk-3-0 libwebkit2gtk-4.1-0 xvfb dbus xclip
+      # Identity comes from racket/core/version.rkt (the release identity the
+      # version gate checks), never from this file.
+      # One icon per platform: .ico (Windows) / .icns (macOS) / .png (Linux packages).
+      - name: Choose the platform icon
+        shell: bash
+        run: |
+          case "$(uname -s)" in
+            Darwin) icon=assets/branding/app.icns ;;
+            Linux) icon=assets/branding/icon-512.png ;;
+            *) icon=assets/branding/app.ico ;;
+          esac
+          test -s "$icon" || { echo "::error::missing icon $icon"; exit 1; }
+          echo "KEYWARD_ICON=$icon" >> "$GITHUB_ENV"
+      - name: Build the package
+        shell: bash
+        run: |
+          read -r VERSION IDENTIFIER <<< "$(racket -e '(require "racket/core/version.rkt") (printf "~a ~a" app-version app-identifier)')"
+          echo "version=$VERSION identifier=$IDENTIFIER"
+          raco glaze build \
+            --name keyward \
+            --version "$VERSION" \
+            --publisher "Turing Lambda" \
+            --identifier "$IDENTIFIER" \
+            --entry host/main.rkt \
+            --icon "$KEYWARD_ICON" \
+            --out dist
+      - name: Packaged launch survives (Linux, Xvfb + session bus)
+        if: runner.os == 'Linux'
+        run: bash host/linux-verify.sh raco glaze measure startup --seconds "$SURVIVAL_SECONDS"
+      - name: Packaged launch survives
+        if: runner.os != 'Linux'
+        # bash on every runner: the Windows default shell would not expand
+        # $SURVIVAL_SECONDS.
+        shell: bash
+        run: raco glaze measure startup --seconds "$SURVIVAL_SECONDS"
+      # raco distribute lays the tree out flat on Windows and Linux
+      # (dist/<name>[.exe] + dist/lib/); macOS assembles the executable into
+      # the .app bundle.
+      - name: Locate the packaged program
+        shell: bash
+        run: |
+          exe="$(find dist -maxdepth 5 -type f -not -path '*/lib/*' \( -name keyward -o -name keyward.exe \) | head -n 1)"
+          test -n "$exe" || { echo "::error::no packaged program under dist/"; find dist -maxdepth 4 | head -40; exit 1; }
+          echo "KEYWARD_EXE=$exe" >> "$GITHUB_ENV"
+      - name: Packaged product journey (Linux, Xvfb + session bus)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          mkdir -p .glaze
+          bash host/linux-verify.sh env KEYWARD_SELFTEST=1 "KEYWARD_SELFTEST_OUT=$PWD/.glaze/selftest.json" \
+            timeout "$SELFTEST_SECONDS" "$KEYWARD_EXE"
+      - name: Packaged product journey
+        if: runner.os != 'Linux'
+        shell: bash
+        # No `timeout` on the macOS runner: the program ends by itself (the
+        # journey has its own deadlines); this watcher is only the backstop.
+        run: |
+          mkdir -p .glaze
+          KEYWARD_SELFTEST=1 KEYWARD_SELFTEST_OUT="$PWD/.glaze/selftest.json" "$KEYWARD_EXE" &
+          pid=$!
+          ( sleep "$SELFTEST_SECONDS"; kill "$pid" 2>/dev/null ) &
+          watcher=$!
+          wait "$pid"; status=$?
+          kill "$watcher" 2>/dev/null
+          exit "$status"
+      - name: Self-check report
+        if: always()
+        shell: bash
+        run: |
+          if [ -s .glaze/selftest.json ]; then cat .glaze/selftest.json; echo; else
+            echo "::error::the packaged program wrote no self-check report"; exit 1
+          fi
+      - name: Upload self-check evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: packaged-selftest-${{ matrix.os }}
+          path: .glaze/selftest.json
+          if-no-files-found: warn
+          retention-days: 14

@@ -21,14 +21,15 @@
          racket/list
          racket/path
          racket/string
-         rivet/app-info
          rivet/backend
          rivet/distribution
+         rivet/distribution/identity
          "core/config.rkt"
          "core/keyformats.rkt"
          "core/keymeta.rkt"
          "core/store.rkt"
          "core/strayscan.rkt"
+         "core/version.rkt"
          "update-policy.rkt"
          "update-trust.rkt")
 
@@ -362,8 +363,8 @@
 (define (update-check-review manifest-bytes install-kind linux-package-format
                              #:trusted-public-key [trusted-public-key (update-public-key-b64)]
                              #:expected-key-id [expected-key-id (update-key-id)]
-                             #:current-version [current-version (app-version)]
-                             #:release-channel [release-channel (app-release-channel)]
+                             #:current-version [current-version app-version]
+                             #:release-channel [release-channel (string->symbol app-release-channel)]
                              #:platform [platform (platform-symbol)]
                              #:architecture [architecture (architecture-symbol)])
   (define kind (string->symbol install-kind))
