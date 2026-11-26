@@ -1,10 +1,6 @@
-.rivet/
+.glaze/
 build/
 dist/
-windows/Generated Files/
-windows/obj/
-windows/RivetHost/
-macos-host/.build/
 .DS_Store
 compiled/
 **/compiled/

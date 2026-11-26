@@ -4,10 +4,10 @@ Thank you for looking under the hood. Keyward is free software
 (AGPL-3.0, see [LICENSE](LICENSE)): by submitting a pull request you
 agree your contribution is licensed under AGPL-3.0.
 
-Keyward follows the Rivet application architecture: Racket owns domain
-logic, native hosts own UI, and the contract between them lives in
-`racket/backend.rkt` (RVT1) plus `rivet-schema.json`. Keep that split
-intact.
+Keyward follows the Rivet application architecture with a glaze carrier:
+Racket owns domain logic (`racket/backend.rkt`, RVT1, `rivet-schema.json`),
+and one carrier (`host/`) owns the UI on the system WebView. Keep that split
+intact: the page renders and relays; the engine decides.
 
 ## Ground rules
 
@@ -28,11 +28,10 @@ intact.
    Ed25519 key, immutable tag URL, size caps); anything that downloads
    or installs without explicit user action is a critical regression.
 4. **The wire contract is cross-platform.** Changing any RPC in
-   `racket/backend.rkt` is a three-platform release: regenerate the
-   checked-in clients with `raco rivet build`
-   (`macos-host/Sources/RivetHost/GeneratedBackend.swift`,
-   `windows/GeneratedBackend.hpp`, `linux/GeneratedBackend.hpp`) in the
-   same commit — they are build inputs, never hand-edit them.
+   `racket/backend.rkt` changes every platform at once: regenerate
+   `glaze-schema.json` (`raco glaze schema write`) in the same commit and
+   keep `scripts/check-rpc-surface.py` green. `entry-get` and
+   `keypair-export` are carrier-only — never route them to the page.
 5. **Fail honestly.** A locked or missing vault degrades to a clear
    message, never a silent fallback or a wrong default; deep check
    reports per-entry findings instead of a single green dot.
@@ -43,23 +42,25 @@ intact.
 
 ```bash
 raco test tests/                       # engine tests (store + key metadata)
-raco make racket/backend.rkt              # backend compiles against the RVT1 contract
-bash scripts/check-release-version.sh  # VERSION == rivet.rktd == CHANGELOG
-raco rivet build                       # backend + current platform native host
+raco make racket/backend.rkt           # backend compiles against the RVT1 contract
+bash scripts/check-release-version.sh  # VERSION == version.rkt == CHANGELOG
+racket host/verify.rkt                 # real-window carrier: 19-step journey
 ```
 
-These mirror the CI `engine` job; the platform hosts compile in their
-own CI jobs. If you touch `macos-host/`, `windows/` or `linux/`, say
-whether you were able to build locally.
+These mirror the CI `engine` job and the `host-ci` carrier job. The carrier
+is exercised on Windows, macOS and Linux in CI; say whether you were able to
+run `host/verify.rkt` locally.
 
 ## Releasing
 
 Releases are tag-driven (`v*`); the workflow gates on
-`scripts/check-release-version.sh`, clean rebuilds and a release
-acceptance smoke against a synthetic vault. A release bump moves
-`VERSION`, `rivet.rktd` and the dated `## [X.Y.Z] - YYYY-MM-DD`
-CHANGELOG entry in the same commit. The release ships installers only —
-no update feed (`raco rivet release --without-updates`), per rule 3.
+`scripts/check-release-version.sh`, a packaged product journey on Linux, and
+the macOS signing secrets. A release bump moves `VERSION`,
+`racket/core/version.rkt` and the dated `## [X.Y.Z] - YYYY-MM-DD` CHANGELOG
+entry in the same commit. macOS is Developer ID-signed and notarized;
+Windows and Linux installers are unsigned for now and the notes say so. The
+release publishes a signed update feed (`update-manifest.json`) but Keyward
+still has no in-app updater, per rule 3.
 
 ## Areas that especially want help
 

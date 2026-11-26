@@ -43,20 +43,28 @@ In scope:
   refused, not cracked.
 - **The stray-key scanner** (`racket/core/strayscan.rkt`): a report must
   never contain key material — path, line, kind and fingerprint only.
-- **The host/backend boundary and the RPC surface**: hosts render and
-  relay; the Racket backend (`racket/backend.rkt`) decides. Backend ↔ host
-  RVT1 traffic runs over inherited file descriptors (`serve-fds`); the
-  backend owns no listening network port. Crypto or trust decisions
-  sneaking into a native host are a bug (key parsing lives in
-  `racket/core/keymeta.rkt`).
+- **The carrier/engine boundary and the RPC surface**: the glaze carrier
+  (`host/`) renders and relays; the Racket engine (`racket/backend.rkt`)
+  decides. The page reaches the engine only through typed RPC routes, the
+  production window runs under a default-deny capability, and the two RPCs
+  that answer key values (`entry-get`, `keypair-export`) are not routed to
+  the page at all — the carrier calls them itself for the clipboard. The
+  carrier uses the native WebView channel (`#:transport 'native`) and the
+  engine runs in-process over a pipe pair: no listening network port. Crypto
+  or trust decisions sneaking into the page or the carrier are a bug (key
+  parsing lives in `racket/core/keymeta.rkt`).
 - **Manual-update-only as an intentional exemption**: Keyward is a key
-  vault and does not update itself — the release pipeline builds with
-  `raco rivet release --without-updates` and there is no production
-  update trust root embedded in shipped builds. Any code path that
-  contacts a network service or self-applies an update without explicit
-  user action is a critical bug. The rationale and the future
-  user-initiated flow are specified in
+  vault and does not update itself — there is no in-app updater and no code
+  path that contacts a network service. Each release publishes a signed
+  update feed (`update-manifest.json`, Ed25519, pinned in
+  `racket/update-trust.rkt`) for the future user-initiated flow only; any
+  code path that downloads or applies an update without explicit user
+  action is a critical bug. The rationale is specified in
   [docs/UPDATE-SECURITY.md](docs/UPDATE-SECURITY.md).
+- **Signing of the installers themselves**: macOS builds are Developer
+  ID-signed and notarized. Windows installers are not Authenticode-signed
+  and Linux packages are not vendor-signed for now; verify those against
+  `SHA256SUMS` or the Sigstore build attestations.
 
 Out of scope: the security of your sync transport and devices (Keyward
 trusts the synced folder you point it at, and full-disk encryption is a

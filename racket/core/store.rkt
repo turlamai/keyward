@@ -180,13 +180,21 @@
   (define dir (path-only path))
   (build-path (or dir (current-directory)) ".history" "keyward"))
 
+;; Owner-only mode bits (600) are a POSIX concept. Racket 9.x on Windows
+;; rejects every bits update ("unsupported permission value"), and the vault
+;; there is protected by the user-profile ACL, so the tightening is skipped
+;; instead of failing every write.
+(define (tighten-mode! file)
+  (unless (eq? (system-type 'os) 'windows)
+    (file-or-directory-permissions file 384)))
+
 (define (store-write! path lines)
   (define tmp (make-temporary-file "keyward~a.ini" #f (or (path-only path) (current-directory))))
   (with-output-to-file tmp
     (lambda () (for ([l (in-list lines)]) (displayln l)))
     #:mode 'text
     #:exists 'replace)
-  (file-or-directory-permissions tmp 384)
+  (tighten-mode! tmp)
   (rename-file-or-directory tmp path #t))
 
 (define (store-set-entry! path section name value [reason #f])
@@ -275,7 +283,7 @@
   (unless (file-exists? src) (error 'store-restore-snapshot! "no such snapshot: ~a" full))
   (store-snapshot! path (format "pre-restore ~a" filename))
   (copy-file src path #t)
-  (file-or-directory-permissions path 384)
+  (tighten-mode! path)
   #t)
 
 ;; ---- deep check --------------------------------------------------------------

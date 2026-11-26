@@ -37,27 +37,30 @@ exactly as the Racket distribution ships them:
 - GNU libiconv (`libiconv-2.dll`), GNU Lesser General Public License,
   version 2.1.
 
-## GTK 4 and GLib
+## WebKitGTK, GTK 3 and GLib
 
-The Linux host is a GTK 4 application. GTK and GLib are licensed under
-the GNU Lesser General Public License, version 2.1 or later. Depending
-on the Linux install shape the libraries come from two places:
+On Linux the glaze carrier renders its UI in WebKitGTK 4.1 (GTK 3), using
+the system libraries. WebKitGTK is licensed under the GNU Lesser General
+Public License version 2.0 or later; GTK and GLib under the GNU Lesser
+General Public License version 2.1 or later. Depending on the Linux install
+shape they come from two places:
 
-- deb / rpm / tar.gz / zip: GTK 4 and its system libraries are supplied
-  by the distribution (or by you, for the tarball).
-- `.AppImage` artifacts: the AppImage carries its own GTK4 dependency
-  closure, bundled by the Rivet release toolchain.
+- deb / rpm / tar.gz / Flatpak: WebKitGTK 4.1 and GTK 3 are supplied by
+  the distribution (or by you, for the tarball; the Flatpak bundles the GNOME
+  runtime).
+- `.AppImage` artifacts: the AppImage carries the WebKitGTK/GTK dependency
+  closure bundled by the glaze release toolchain.
 
-## Microsoft Windows App SDK
+## Microsoft WebView2 runtime (Windows)
 
-The Windows host is a WinUI 3 application built on the Microsoft
-Windows App SDK, distributed by Microsoft under the MIT license.
+On Windows the carrier renders its UI in the Microsoft Edge WebView2
+runtime, provided by Microsoft under the Microsoft Edge WebView2 terms and
+shipped with the operating system.
 
-## Apple system frameworks
+## Apple WebKit (macOS)
 
-The macOS host is a SwiftUI application built against Apple's system
-frameworks (SwiftUI, AppKit, Security and friends), provided under
-Apple's SDK license terms and shipped by the operating system itself.
+On macOS the carrier renders its UI with WKWebView, provided under Apple's
+SDK license terms and shipped by the operating system itself.
 
 ## AppImageKit runtime (`.AppImage` artifacts)
 

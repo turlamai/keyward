@@ -20,13 +20,13 @@ WinSparkle、Google Omaha——方案都是这一套，而没人替你解决的�
 > 或[源 markdown](docs/manual.zh-CN.md)：安装、连接保险库、每一项日常操作、
 > 接入 CI、发布更新、密钥轮换，为零基础读者写就。
 
-Keyward 是一个守护这些密钥的小型桌面应用。建在家族 Rivet 线上
-（Racket 引擎 + 原生宿主），库文件就放在你自己的同步盘里，并往上补足
-明文存储缺的那份纪律：
+Keyward 是一个守护这些密钥的小型桌面应用。一个 Racket 引擎，后面接一个
+Glaze 载体（系统 WebView，macOS / Windows / Linux 共用一套 UI），库文件就放在
+你自己的同步盘里，并往上补足明文存储缺的那份纪律：
 
-- **永不显示，只进剪贴板。** 密钥值只通过显式的「复制到剪贴板」动作返回。
-  复制时会明示暴露面（任何应用都能读取剪贴板），并在 30 秒后自动清空——
-  期间你自己复制的其他内容永远不会被误删。
+- **永不显示，只进剪贴板。** 密钥值从不进入界面：复制动作经载体直达
+  剪贴板，复制时会明示暴露面（任何应用都能读取剪贴板），并在 30 秒后
+  自动清空——期间你自己复制的其他内容永远不会被误删。
 - **防丢失。** 每次改动先对存储做快照（同步盘内、只追加）；写入原子化，
   权限收紧。
 - **深度校验。** 解析每把密钥（Ed25519 / RSA PKCS#8、base64-DER、
@@ -59,47 +59,45 @@ AGPL-3.0 许可的免费发布基础设施工具，不接商业激活。 提供 
 |---|---|---|
 | macOS 14+（Apple Silicon 与 Intel） | `keyward-<version>-macos-<arch>.dmg`——`arm64` / `x64`，每种架构另附便携 `.zip` | 仅手动下载——密钥保险库不自我更新（[docs/UPDATE-SECURITY.md](docs/UPDATE-SECURITY.md)） |
 | Windows 10+ x64 | `keyward-<version>-windows-x64.msi` 安装器，或 `keyward-<version>-windows-x64.zip` 便携版 | 仅手动下载 |
-| Linux x64 / arm64 | `keyward-<version>-linux-x86_64.AppImage` / `keyward-<version>-linux-aarch64.AppImage`、`keyward-<version>-linux-<发行版架构>.deb`、`.rpm`、Flatpak bundle `keyward-<version>-linux-<arch>.flatpak`（app id `site.jrtx.keyward`；`flatpak --user install ./keyward-<version>-linux-<arch>.flatpak` 安装），或便携版 `tar.gz` / `.zip` | 仅手动下载 |
+| Linux x64 / arm64 | `keyward-<version>-linux-x86_64.AppImage` / `keyward-<version>-linux-aarch64.AppImage`、`keyward-<version>-linux-<发行版架构>.deb`、`.rpm`、Flatpak bundle `keyward-<version>-linux-<arch>.flatpak`（app id `site.jrtx.keyward`；`flatpak --user install ./keyward-<version>-linux-<arch>.flatpak` 安装），或便携版 `tar.gz` | 仅手动下载 |
 
-每个发布都带 `SHA256SUMS` 校验清单、逐资产 `.sha256` sidecar、CycloneDX
+每个发布都带 `SHA256SUMS` 校验清单、CycloneDX
 SBOM 与 Sigstore 构建来源证明（`gh attestation verify <file> -R turlamai/keyward`）。
 
-macOS 版本仅为 ad-hoc 签名（未公证）：首次启动若被 Gatekeeper 拦截，
-右键应用选「打开」。发布二进制不带发布者代码签名——请以 `SHA256SUMS`
-或构建来源证明校验下载物，不要依赖安装包签名。
+macOS 版本为 Developer ID 签名并公证。**Windows 安装包暂未做 Authenticode
+签名**（SmartScreen 首次运行会提示），**Linux 安装包暂未做厂商签名**：请以
+`SHA256SUMS` 或构建来源证明校验下载物，不要依赖安装包签名。
 
 ## 状态
 
-**v0.3.0 已发布**——三个桌面的安装包都在
+**Glaze 线的 v0.1.0 已发布**——三个原生宿主（SwiftUI / WinUI 3 / GTK4）
+合并为一个载体、一套 UI，发布线从头开始，旧的 0.1.0 – 0.3.0 已下架。
+三个桌面的安装包都在
 [Releases 页](https://github.com/turlamai/keyward/releases/latest)：
 macOS（arm64 / x64，DMG + zip）、Windows（x64，MSI + zip）、
-Linux（x64 / arm64，deb + rpm + AppImage + tar.gz + zip），每个都带
-SHA-256 sidecar。Windows（WinUI 3）与 Linux（GTK4）宿主已构建并有
-CI 覆盖，三端共享同一套交互契约：状态刷新、对话框默认按钮、剪贴板
-告知完全一致。0.3.0 新增两阶段轮换工作流（暂存下一把钥不动现役签名
-钥，发一个信任它的版本，再转正——Promote 有配对门禁）、工作区流浪
-密钥扫描器、Sparkle/Tauri 密钥格式导入导出；选择 vault 现在立即切换，
-不再等重启。
+Linux（x64 / arm64，deb + rpm + AppImage + Flatpak + tar.gz）。
+两阶段轮换工作流、工作区流浪密钥扫描器、Sparkle/Tauri 密钥格式导入导出
+全部保留。载体不监听任何网络端口：页面经进程内通道与引擎通信。
 
 ## 安全模型
 
 保险库**有意**保持明文——它活在你自己可信设备间的私有同步里，预算花在
 每台设备的全盘加密上。Keyward 从不把密钥发往任何地方：引擎里没有
-网络代码。操作守则见 `AGENTS.md`（永不打印值、永不提交保险库、
+网络代码，载体也不监听端口。操作守则见 `AGENTS.md`（永不打印值、永不提交保险库、
 流浪件立即收集）。
 
 ## 开发
 
 ```bash
-raco rivet dev        # 构建后端 + macOS 宿主并运行应用
-raco test tests/      # 引擎测试（存储 + 密钥元数据）
-raco rivet package    # 分发产物
+racket host/main.rkt        # 运行应用（glaze 载体，原生通道）
+raco test tests/            # 引擎测试（存储、密钥元数据、轮换、扫描）
+racket host/verify.rkt      # 真实窗口自检：19 步走查 + 判定
+raco glaze build --name keyward --entry host/main.rkt --installer   # 打包
 ```
 
-- 共享引擎：`racket/backend.rkt` + `racket/core/`（RVT1 契约——所有未来宿主
-  共享的线上接口）
-- macOS UI：`macos-host/Sources/RivetHost/`
-- Windows UI：`windows/` · Linux UI：`linux/`
+- 引擎：`racket/backend.rkt` + `racket/core/`（RVT1 契约，`rivet-schema.json`）
+- 载体与 UI：`host/`（见 [host/README.md](host/README.md)）；设计 token 在
+  `design/prototype/shared.css`
 
 ## License
 

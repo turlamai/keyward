@@ -1,11 +1,32 @@
 name: Release
 
+# keyward#34 S5: the v0.1.0 release line on the glaze carrier. Two modes,
+# same build steps:
+#
+#   - push of a v* tag: Developer ID-signed + notarized macOS, unsigned
+#     Windows and Linux packages, published as a GitHub Release with
+#     SHA256SUMS, the signed update feed and build-provenance attestations.
+#   - workflow_dispatch: a rehearsal. Same builds (macOS ad-hoc signed),
+#     artifacts only, nothing is published. Use it to try the installers
+#     before tagging.
+#
+# Signing stance (owner decision 2026-11-25): macOS is production-signed and
+# notarized with the Developer ID key. Windows has no Authenticode certificate
+# and Linux no GPG signing key for now, so those installers are unsigned and
+# the release notes say so. A tag release still fails closed when the macOS
+# signing secrets or the update-feed signing key are missing.
+#
+# Version and identity come from racket/core/version.rkt (the release
+# identity scripts/check-release-version.sh gates). Pins are read from
+# host-ci.yml so the package is built with the rivet and glaze the carrier CI
+# verifies.
 on:
   push:
-    tags: ['v*']
+    tags: ["v*"]
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
   id-token: write
   attestations: write
 
@@ -13,49 +34,98 @@ concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
 
-# Single source of truth for the rivet pin; every install step below
-# references this so a bump is one edit, not a grep-replace across jobs.
 env:
-  RIVET_PIN: c1f0d921e2136c0cfb2c1c1f6d273f2b26222a19
+  IS_TAG_RELEASE: ${{ startsWith(github.ref, 'refs/tags/v') }}
 
 jobs:
+  validate:
+    name: Validate release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.identity.outputs.version }}
+      identifier: ${{ steps.identity.outputs.identifier }}
+      glaze-pin: ${{ steps.pin.outputs.glaze-pin }}
+      rivet-pin: ${{ steps.pin.outputs.rivet-pin }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: Bogdanp/setup-racket@v1.15
+        with:
+          version: stable
+          distribution: full
+          architecture: x64
+      - name: Check release identity (tag must match when tagging)
+        run: |
+          if [ "$IS_TAG_RELEASE" = "true" ]; then
+            bash scripts/check-release-version.sh "$GITHUB_REF_NAME"
+          else
+            bash scripts/check-release-version.sh
+          fi
+      - name: Read version and identifier
+        id: identity
+        run: |
+          read -r VERSION IDENTIFIER <<< "$(racket -e '(require "racket/core/version.rkt") (printf "~a ~a" app-version app-identifier)')"
+          test -n "$VERSION" && test -n "$IDENTIFIER"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "identifier=$IDENTIFIER" >> "$GITHUB_OUTPUT"
+      - name: Read glaze + rivet pins from host-ci.yml
+        id: pin
+        run: |
+          pin="$(grep -m1 -E '^ *GLAZE_PIN:' .github/workflows/host-ci.yml | sed -E 's/.*GLAZE_PIN:[[:space:]]*//')"
+          test -n "$pin"
+          echo "glaze-pin=$pin" >> "$GITHUB_OUTPUT"
+          rpin="$(grep -m1 -E '^ *GLAZE_RIVET_PIN:' .github/workflows/host-ci.yml | sed -E 's/.*GLAZE_RIVET_PIN:[[:space:]]*//')"
+          test -n "$rpin"
+          echo "rivet-pin=$rpin" >> "$GITHUB_OUTPUT"
+      # Fail before any expensive platform build: a release never ships
+      # without its signed update feed (docs/UPDATE-SECURITY.md).
+      - name: Tag releases need the macOS signing secrets and the update key
+        if: env.IS_TAG_RELEASE == 'true'
+        env:
+          DEVELOPER_ID_P12_B64: ${{ secrets.DEVELOPER_ID_P12_B64 }}
+          DEVELOPER_ID_P12_PASSWORD: ${{ secrets.DEVELOPER_ID_P12_PASSWORD }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8_B64: ${{ secrets.ASC_KEY_P8_B64 }}
+          UPDATE_ED25519_PRIVATE_KEY_B64: ${{ secrets.UPDATE_ED25519_PRIVATE_KEY_B64 }}
+        run: |
+          for name in DEVELOPER_ID_P12_B64 DEVELOPER_ID_P12_PASSWORD ASC_KEY_ID ASC_ISSUER_ID ASC_KEY_P8_B64 UPDATE_ED25519_PRIVATE_KEY_B64; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::$name is not set on this repository. A tag release is production-signed on macOS and carries a signed update feed. Nothing was built or published."
+              exit 1
+            fi
+          done
+
   macos:
     name: macOS (${{ matrix.arch }})
+    needs: validate
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - { arch: arm64, runner: macos-latest, racket-arch: arm64 }
-          - { arch: x64, runner: macos-15-intel, racket-arch: x64 }
+          - arch: arm64
+            runner: macos-latest
+            racket-arch: arm64
+          - arch: x64
+            runner: macos-15-intel
+            racket-arch: x64
     env:
-      # Production signing lights up as soon as the account-level secrets
-      # exist (Developer ID p12 + App Store Connect API key) and applies to
-      # every workflow run that has them. Credential contract:
-      # DEVELOPER_ID_P12_B64 / DEVELOPER_ID_P12_PASSWORD / ASC_KEY_ID /
-      # ASC_ISSUER_ID / ASC_KEY_P8_B64; see rivet docs/production-signing.md.
       MACOS_SIGNING_CONFIGURED: ${{ secrets.DEVELOPER_ID_P12_B64 != '' && secrets.ASC_KEY_P8_B64 != '' }}
-      # A tag push is a release: without credentials it must fail closed
-      # instead of silently shipping ad-hoc signed artifacts.
-      IS_TAG_RELEASE: ${{ startsWith(github.ref, 'refs/tags/v') }}
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Racket CS
+      - name: Install Racket (${{ matrix.racket-arch }})
         uses: Bogdanp/setup-racket@v1.15
         with:
-          architecture: ${{ matrix.racket-arch }}
+          version: stable
           distribution: full
-          variant: CS
-          version: '9.3'
-      - name: Install Rivet (pinned, matches the local release drills)
-        run: raco pkg install --auto --no-docs crypto 'https://github.com/turlamai/rivet.git#${{ env.RIVET_PIN }}'
-      - name: Version preflight (VERSION == rivet.rktd == tag == CHANGELOG)
-        run: bash scripts/check-release-version.sh "${{ github.ref_name }}"
-      # Release artifacts must never reuse compiled caches from another
-      # commit (the v0.2.0 deb shipped an older engine than its tag);
-      # clean forces the whole backend to recompile from this checkout.
-      - name: Clean-build gate (issue #7)
-        run: raco rivet clean
+          architecture: ${{ matrix.racket-arch }}
+      - name: Install Rivet + Glaze + crypto (catalog)
+        run: |
+          raco pkg install --auto --no-docs "https://github.com/turlamai/rivet.git#${{ needs.validate.outputs.rivet-pin }}"
+          raco pkg install --auto --no-docs "https://github.com/turlamai/glaze.git#${{ needs.validate.outputs.glaze-pin }}"
+          raco pkg install --auto --no-docs crypto
       - name: Provision Developer ID certificate
         if: env.MACOS_SIGNING_CONFIGURED == 'true'
         env:
@@ -76,13 +146,7 @@ jobs:
           rm -f "$P12"
           IDENTITY_NAME="$(security find-identity -v -p codesigning "$KEYCHAIN" | grep 'Developer ID Application' | head -1 | sed -E 's/^[^"]*"(.*)"$/\1/')"
           test -n "$IDENTITY_NAME"
-          # rivet reads exactly these two (rivet docs/production-signing.md);
-          # release defaults to production mode, so exporting them alone
-          # flips packaging over once --development is dropped below.
-          {
-            echo "RIVET_MACOS_SIGN_IDENTITY=$IDENTITY_NAME"
-            echo "RIVET_MACOS_NOTARY_PROFILE=ASC_NOTARY"
-          } >> "$GITHUB_ENV"
+          echo "MACOS_SIGN_IDENTITY=$IDENTITY_NAME" >> "$GITHUB_ENV"
       - name: Store notarytool keychain profile
         if: env.MACOS_SIGNING_CONFIGURED == 'true'
         env:
@@ -96,222 +160,315 @@ jobs:
           xcrun notarytool store-credentials ASC_NOTARY \
             --key-id "$ASC_KEY_ID" --issuer "$ASC_ISSUER_ID" --key "$P8"
           rm -f "$P8"
-      # DMG (human installer) + portable zip + launch smoke. rivet's own
-      # per-platform update emission stays off: keyward signs ONE merged
-      # update feed in the publish job (payback pattern) — the app itself
-      # stays manual-update-only until the issue #15 ladder lands.
-      # `raco rivet release` defaults to production packaging: with the
-      # credentials exported above it Developer ID-signs, notarizes,
-      # staples, and re-verifies inside rivet itself.
-      - name: Release (DMG + portable zip, Developer ID + notarized)
+      - name: Build (Developer ID + notarized)
         if: env.MACOS_SIGNING_CONFIGURED == 'true'
-        run: raco rivet release --without-updates
-      - name: Release (DMG + portable zip, ad-hoc dispatch smoke)
-        if: env.MACOS_SIGNING_CONFIGURED != 'true' && env.IS_TAG_RELEASE != 'true'
-        run: raco rivet release --without-updates --development
-      - name: Release requires signing credentials
+        run: |
+          set -euo pipefail
+          VERSION="${{ needs.validate.outputs.version }}"
+          IDENTIFIER="${{ needs.validate.outputs.identifier }}"
+          raco glaze build \
+            --name keyward \
+            --version "$VERSION" \
+            --publisher "Turing Lambda" \
+            --identifier "$IDENTIFIER" \
+            --entry host/main.rkt \
+            --installer \
+            --icon assets/branding/app.icns \
+            --dmg-background assets/branding/dmg-background.png \
+            --sign "$MACOS_SIGN_IDENTITY" \
+            --notarize ASC_NOTARY
+          test -d dist/keyward.app
+          test -s dist/keyward.dmg
+      - name: Build requires signing credentials
         if: env.MACOS_SIGNING_CONFIGURED != 'true' && env.IS_TAG_RELEASE == 'true'
         run: |
-          echo "::error::Tag releases must be production-signed: set the macOS signing secrets (DEVELOPER_ID_P12_B64, DEVELOPER_ID_P12_PASSWORD, ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_P8_B64) on this repository before tagging."
+          echo "::error::Tag releases must be production-signed: the macOS signing secrets are missing."
           exit 1
+      - name: Build (ad-hoc, rehearsal only)
+        if: env.MACOS_SIGNING_CONFIGURED != 'true' && env.IS_TAG_RELEASE != 'true'
+        run: |
+          set -euo pipefail
+          VERSION="${{ needs.validate.outputs.version }}"
+          IDENTIFIER="${{ needs.validate.outputs.identifier }}"
+          raco glaze build \
+            --name keyward \
+            --version "$VERSION" \
+            --publisher "Turing Lambda" \
+            --identifier "$IDENTIFIER" \
+            --entry host/main.rkt \
+            --installer \
+            --icon assets/branding/app.icns \
+            --dmg-background assets/branding/dmg-background.png
+          test -d dist/keyward.app
+          test -s dist/keyward.dmg
       - name: Family naming + checksums
         run: |
           set -euo pipefail
-          VERSION="${GITHUB_REF_NAME#v}"
+          VERSION="${{ needs.validate.outputs.version }}"
           ARCH="${{ matrix.arch }}"
-          cd dist
-          # rivet names the portable zip in family form already; only
-          # the DMG lacks the architecture.
-          mv "keyward-${VERSION}-macos.dmg" "keyward-${VERSION}-macos-${ARCH}.dmg"
-          for f in keyward-*.dmg keyward-*.zip; do
-            [ -f "$f" ] || continue
+          mv dist/keyward.dmg "keyward-$VERSION-macos-$ARCH.dmg"
+          ditto -c -k --keepParent dist/keyward.app "keyward-$VERSION-macos-$ARCH.zip"
+          for f in keyward-*; do
             [ -f "$f.sha256" ] || shasum -a 256 "$f" > "$f.sha256"
           done
-      # The sbom/notices bodies stay in the CI artifact only; the
-      # release carries installers and their sidecars, nothing else.
+          ls -la keyward-*
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            keyward-*-macos-${{ matrix.arch }}.dmg
+            keyward-*-macos-${{ matrix.arch }}.zip
       - uses: actions/upload-artifact@v4
         with:
           name: macos-${{ matrix.arch }}
-          path: dist/keyward-*
+          path: keyward-*
+          if-no-files-found: error
 
   windows:
     name: Windows (x64)
+    needs: validate
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Racket CS
-        uses: Bogdanp/setup-racket@v1.15
+      - uses: Bogdanp/setup-racket@v1.15
         with:
-          architecture: x64
+          version: stable
           distribution: full
-          variant: CS
-          version: '9.3'
-      - name: Install Rivet (catalog)
+          architecture: x64
+      - name: Export trusted Mozilla CA roots for Windows Racket
         shell: pwsh
-        run: raco pkg install --auto --no-docs crypto 'https://github.com/turlamai/rivet.git#${{ env.RIVET_PIN }}'
-      # WiX v5 is rivet's MSI toolchain (raco rivet release shells out to it).
-      - name: Install WiX
+        run: |
+          $bundle = Join-Path $env:RUNNER_TEMP 'keyward-mozilla-roots.pem'
+          $js = 'const tls=require("node:tls"),fs=require("node:fs"); if(tls.rootCertificates.length<50) process.exit(2); fs.writeFileSync(process.argv[1],tls.rootCertificates.join("\n")+"\n",{flag:"wx"});'
+          node -e $js $bundle
+          if ($LASTEXITCODE -ne 0 -or -not (Test-Path $bundle -PathType Leaf)) {
+            throw "Unable to export CA roots; refusing insecure TLS fallback"
+          }
+          "KEYWARD_CI_CA_BUNDLE=$bundle" >> $env:GITHUB_ENV
+      - name: Install pinned Keel + Rivet + Glaze + crypto (verified TLS)
+        env:
+          RIVET_PIN: ${{ needs.validate.outputs.rivet-pin }}
+          GLAZE_PIN: ${{ needs.validate.outputs.glaze-pin }}
+        shell: pwsh
+        run: racket scripts/ci-install-windows-deps.rkt
+      # WiX v5 is glaze's MSI toolchain (raco glaze build shells out to it).
+      - name: Install WiX (v5; v7 requires EULA acceptance)
         shell: bash
-        run: dotnet tool install --global wix --version 5.0.2
-      - name: Version preflight (VERSION == rivet.rktd == tag == CHANGELOG)
-        shell: bash
-        run: bash scripts/check-release-version.sh "${{ github.ref_name }}"
-      # Clean-build gate — see the macOS leg (issue #7).
-      - name: Clean-build gate (issue #7)
-        shell: pwsh
-        run: raco rivet clean
-      # MSI (human installer) + portable zip + launch smoke — same merged
-      # feed policy as the macOS leg (signed in the publish job).
-      - name: Release (MSI + portable zip)
-        shell: pwsh
-        run: raco rivet release --without-updates --development
-      - name: Family naming + checksums
+        run: |
+          dotnet tool install --global wix --version 5.0.2
+          echo "$USERPROFILE/.dotnet/tools" >> "$GITHUB_PATH"
+      # Unsigned by decision: no Authenticode certificate is purchased for
+      # Windows for now (see the header). The MSI carries the product icon and
+      # wizard artwork; SmartScreen will warn on first run.
+      - name: Build MSI + distribution
         shell: bash
         run: |
           set -euo pipefail
-          VERSION="${GITHUB_REF_NAME#v}"
-          cd dist
-          # rivet names the MSI and portable zip in family form already;
-          # give the SBOM the family name so it rides the release.
-          mv sbom.cdx.json "keyward-${VERSION}-windows-x64.sbom.cdx.json"
-          for f in keyward-*; do
-            case "$f" in
-              *.sha256) ;;
-              # The sbom/wixpdb bodies stay unchecksummed; checksum what
-              # users verify by hand (installers and their sidecars).
-              *.sbom.cdx.json | *.wixpdb) ;;
-              *) [ -f "$f" ] || continue; [ -f "$f.sha256" ] || sha256sum "$f" > "$f.sha256";;
-            esac
-          done
+          raco glaze build \
+            --name keyward \
+            --version "${{ needs.validate.outputs.version }}" \
+            --publisher "Turing Lambda" \
+            --identifier "${{ needs.validate.outputs.identifier }}" \
+            --entry host/main.rkt \
+            --installer \
+            --icon assets/branding/app.ico \
+            --installer-banner assets/branding/wizard-banner.bmp \
+            --installer-dialog assets/branding/wizard-dialog.bmp
+          test -s dist/keyward.msi
+      - name: Family naming + checksums
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $version = '${{ needs.validate.outputs.version }}'
+          $msi = "keyward-$version-windows-x64.msi"
+          Move-Item dist/keyward.msi $msi
+          $items = Get-ChildItem dist -Exclude *.msi
+          Compress-Archive -Path $items.FullName -DestinationPath "keyward-$version-windows-x64.zip"
+          foreach ($f in Get-ChildItem keyward-*) {
+            $hash = (Get-FileHash -Algorithm SHA256 $f.FullName).Hash.ToLower()
+            "$hash  $($f.Name)" | Set-Content -NoNewline "$($f.FullName).sha256"
+          }
+          Get-ChildItem keyward-* | Select-Object Name, Length
       - uses: actions/upload-artifact@v4
         with:
           name: windows
-          path: dist/keyward-*
+          path: keyward-*
+          if-no-files-found: error
 
   linux:
     name: Linux (${{ matrix.arch }})
+    needs: validate
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - { arch: x64, runner: ubuntu-latest, racket-arch: x64 }
-          - { arch: arm64, runner: ubuntu-24.04-arm, racket-arch: arm64 }
+          - arch: x64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v4
-      # The ref is a literal — `uses:` cannot expand ${{ env.RIVET_PIN }};
-      # keep it in sync with RIVET_PIN above when bumping rivet.
-      - name: Set up embeddable Racket CS
-        uses: turlamai/rivet/.github/actions/setup-embed-racket@c1f0d921e2136c0cfb2c1c1f6d273f2b26222a19
-      # Installed after the embeddable runtime so the catalog dependency
-      # closure (cext-lib, crypto-lib, keel) resolves against the minimal
-      # build — it ships no packages of its own. crypto backs keyward's
-      # Ed25519 key work.
-      - name: Install Rivet (catalog) and backend packages
+      - uses: Bogdanp/setup-racket@v1.15
+        with:
+          version: stable
+          distribution: full
+          architecture: ${{ matrix.arch }}
+      - name: Install Rivet + Glaze + crypto (catalog)
         run: |
-          raco pkg install --auto --no-docs 'https://github.com/turlamai/rivet.git#${{ env.RIVET_PIN }}'
+          raco pkg install --auto --no-docs "https://github.com/turlamai/rivet.git#${{ needs.validate.outputs.rivet-pin }}"
+          raco pkg install --auto --no-docs "https://github.com/turlamai/glaze.git#${{ needs.validate.outputs.glaze-pin }}"
           raco pkg install --auto --no-docs crypto
-      - name: Install GTK4, rpm and packaging tooling
+      - name: Install packaging tooling and webview runtime
         run: |
           sudo apt-get update
-          sudo apt-get install --yes \
-            libgtk-4-dev libadwaita-1-dev libjson-glib-dev libsecret-1-dev \
-            libglib2.0-dev cmake ninja-build pkg-config file \
-            rpm desktop-file-utils \
-            xvfb dbus-x11 at-spi2-core python3-pyatspi
-      - name: Version preflight (VERSION == rivet.rktd == tag == CHANGELOG)
-        run: bash scripts/check-release-version.sh "${{ github.ref_name }}"
-      # Clean-build gate — see the macOS leg (issue #7).
-      - name: Clean-build gate (issue #7)
-        run: raco rivet clean
-      # tar.gz (portable) + deb + rpm + AppImage + portable zip + SBOM,
-      # launch smoke included. The AppImage carries its own GTK4 dependency
-      # closure; APPIMAGE_EXTRACT_AND_RUN lets appimagetool run on the
-      # runner. AppImage entries feed the signed update feed (publish job).
-      - name: Release (tar.gz + deb + rpm + AppImage + portable zip)
+          sudo apt-get install --yes rpm desktop-file-utils file \
+            libgtk-3-0 libwebkit2gtk-4.1-0 xvfb dbus xclip
+      - name: Fetch appimagetool (release CDN fallback)
+        shell: bash
         env:
-          APPIMAGE_EXTRACT_AND_RUN: '1'
-        run: raco rivet release --without-updates --development
-      # Release acceptance (issue #7): open a synthetic disposable vault in
-      # the packaged host and assert — through the accessibility tree —
-      # that the sidebar lists its product; then relaunch with the vault
-      # restored from the persisted config (the v0.2.0 restart wedge).
-      - name: Release-acceptance smoke (synthetic vault, restart persistence)
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          HOST="$(find dist -type f -name RivetHost | head -n1)"
-          if [ -z "$HOST" ]; then
-            TAR="$(find dist -name 'keyward-*-linux-*.tar.gz' | head -n1)"
-            test -n "$TAR" || { echo "no Linux bundle found in dist" >&2; exit 1; }
-            mkdir -p "$RUNNER_TEMP/acceptance-bundle"
-            tar -xzf "$TAR" -C "$RUNNER_TEMP/acceptance-bundle"
-            HOST="$(find "$RUNNER_TEMP/acceptance-bundle" -type f -name RivetHost | head -n1)"
+          case "${{ matrix.arch }}" in
+            x64)
+              asset_arch=x86_64
+              digest=46fdd785094c7f6e545b61afcfb0f3d98d8eab243f644b4b17698c01d06083d1
+              ;;
+            arm64)
+              asset_arch=aarch64
+              digest=04f45ea45b5aa07bb2b071aed9dbf7a5185d3953b11b47358c1311f11ea94a96
+              ;;
+            *) echo "::error::unsupported Linux architecture"; exit 1 ;;
+          esac
+          dest="$RUNNER_TEMP/appimagetool-${asset_arch}.AppImage"
+          url="https://github.com/AppImage/appimagetool/releases/download/1.9.0/appimagetool-${asset_arch}.AppImage"
+          if ! curl -fSL --retry 2 --retry-delay 2 -o "$dest" "$url"; then
+            asset_id="$(gh api repos/AppImage/appimagetool/releases/tags/1.9.0 \
+              --jq ".assets[] | select(.name==\"appimagetool-${asset_arch}.AppImage\") | .id")"
+            gh api -H 'Accept: application/octet-stream' \
+              "repos/AppImage/appimagetool/releases/assets/${asset_id}" > "$dest"
           fi
-          test -n "$HOST" || { echo "RivetHost binary not found" >&2; exit 1; }
-          chmod +x "$HOST"
-          dbus-run-session -- bash scripts/release-acceptance.sh "$HOST"
-      # Wraps the tar.gz payload into a Flatpak bundle from the flatpak/
-      # manifest template (family contract: deb+rpm+AppImage+Flatpak+tar.gz).
-      # The manifest's module closure covers the two NEEDED entries outside
-      # the GNOME Platform runtime (liblz4.so.1, libtinfo.so.6). Like
-      # deb/rpm, the flatpak install shape is manual-by-design. Runs before
-      # Family naming so the bundle joins the checksum sweep.
+          actual="$(sha256sum "$dest" | awk '{print $1}')"
+          if [ "$actual" != "$digest" ]; then
+            echo "::error::appimagetool checksum mismatch (expected $digest, got $actual)"
+            exit 1
+          fi
+          chmod +x "$dest"
+          mkdir -p "$RUNNER_TEMP/bin"
+          cp "$dest" "$RUNNER_TEMP/bin/appimagetool"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+      # APPIMAGE_EXTRACT_AND_RUN lets appimagetool run on the runner.
+      - name: Build (tar.gz tree + deb + rpm + AppImage)
+        env:
+          APPIMAGE_EXTRACT_AND_RUN: '1'
+        run: |
+          set -euo pipefail
+          raco glaze build \
+            --name keyward \
+            --version "${{ needs.validate.outputs.version }}" \
+            --publisher "Turing Lambda" \
+            --identifier "${{ needs.validate.outputs.identifier }}" \
+            --entry host/main.rkt \
+            --installer \
+            --icon assets/branding/icon-512.png
+          test -s dist/keyward.deb
+          test -s dist/keyward.rpm
+          test -s dist/keyward.AppImage
+      # Release acceptance: the packaged program runs the 19-step product
+      # journey (open a disposable vault, generate, copy, rotate, restore) in
+      # its own window on the production path and exits with the verdict.
+      - name: Packaged product journey (Xvfb + session bus)
+        env:
+          WEBKIT_DISABLE_DMABUF_RENDERER: '1'
+        run: |
+          set -euo pipefail
+          mkdir -p .glaze
+          bash host/linux-verify.sh env KEYWARD_SELFTEST=1 "KEYWARD_SELFTEST_OUT=$PWD/.glaze/selftest.json" \
+            timeout 360 dist/bin/keyward
+      - name: Self-check report
+        if: always()
+        run: cat .glaze/selftest.json || true
+      # Wraps the portable tree (bin/ + lib/) into a Flatpak bundle from the
+      # flatpak/ manifest (family contract: deb+rpm+AppImage+Flatpak+tar.gz).
+      # Runs before Family naming so the bundle joins the checksum sweep.
       - name: Flatpak bundle
         run: |
           set -euo pipefail
-          VERSION="${GITHUB_REF_NAME#v}"
+          VERSION="${{ needs.validate.outputs.version }}"
           ARCH="${{ matrix.arch }}"
           case "$ARCH" in x64) FPARCH=x86_64 ;; arm64) FPARCH=aarch64 ;; esac
           sudo apt-get install --yes flatpak flatpak-builder
           # User-level everything: runner accounts install runtimes and
           # build without root. GNOME 50 is the oldest supported platform
-          # runtime (48 went EOL 2026-03-24); its glibc covers the
-          # ubuntu-built payload.
+          # runtime; its glibc covers the ubuntu-built payload.
           flatpak --user remote-add --if-not-exists flathub \
             https://flathub.org/repo/flathub.flatpakrepo
           flatpak --user install -y --noninteractive flathub \
             "org.gnome.Platform/${FPARCH}/50" "org.gnome.Sdk/${FPARCH}/50"
-          # The manifest template carries version/arch/sha placeholders so
-          # the archive source's checksum is exact per release.
-          cp "dist/keyward-${VERSION}-linux-${ARCH}.tar.gz" .
-          SHA="$(sha256sum "keyward-${VERSION}-linux-${ARCH}.tar.gz" | cut -d' ' -f1)"
-          sed -e "s/__VERSION__/${VERSION}/" -e "s/__ARCH__/${ARCH}/" \
-              -e "s/__SHA256__/${SHA}/" \
-              flatpak/site.jrtx.keyward.yml > site.jrtx.keyward.gen.yml
+          flatpak run --command=sh "org.gnome.Sdk/${FPARCH}/50" -c \
+            'ls /usr/lib/*/libwebkit2gtk-4.1.so* /usr/lib/*/libgtk-3.so*'
+          # The payload enters as a dir source staged from dist/ so the bundle
+          # stays byte-identical to the tarball.
+          mkdir -p flatpak-src
+          cp -a dist/bin dist/lib flatpak-src/
+          cp flatpak/site.jrtx.keyward.yml site.jrtx.keyward.gen.yml
           # --disable-rofiles-fuse: runners have no /dev/fuse.
           flatpak-builder --user --force-clean --disable-rofiles-fuse \
-            --repo=flatpak-repo flatpak-build site.jrtx.keyward.gen.yml
+            --default-branch=stable --repo=flatpak-repo flatpak-build site.jrtx.keyward.gen.yml
           flatpak build-bundle flatpak-repo \
-            "keyward-${VERSION}-linux-${ARCH}.flatpak" site.jrtx.keyward stable
-          mv "keyward-${VERSION}-linux-${ARCH}.flatpak" dist/
-          rm -rf flatpak-build flatpak-repo \
-            "keyward-${VERSION}-linux-${ARCH}.tar.gz" site.jrtx.keyward.gen.yml
-          test -f "dist/keyward-${VERSION}-linux-${ARCH}.flatpak"
+            "keyward-$VERSION-linux-$ARCH.flatpak" site.jrtx.keyward stable
+          flatpak --user install -y --noninteractive \
+            "keyward-$VERSION-linux-$ARCH.flatpak"
+          flatpak run --command=sh site.jrtx.keyward -c \
+            'test -x /app/keyward/bin/keyward && test -f /app/share/icons/hicolor/512x512/apps/site.jrtx.keyward.png'
+          mv "keyward-$VERSION-linux-$ARCH.flatpak" dist/
+          rm -rf flatpak-build flatpak-repo flatpak-src site.jrtx.keyward.gen.yml
       - name: Family naming + checksums
         run: |
           set -euo pipefail
-          VERSION="${GITHUB_REF_NAME#v}"
+          VERSION="${{ needs.validate.outputs.version }}"
           ARCH="${{ matrix.arch }}"
+          case "$ARCH" in x64) DEB_ARCH=amd64; RPM_ARCH=x86_64 ;; arm64) DEB_ARCH=arm64; RPM_ARCH=aarch64 ;; esac
+          raco glaze compliance --out dist
           cd dist
-          mv sbom.cdx.json "keyward-${VERSION}-linux-${ARCH}.sbom.cdx.json"
+          mv keyward.deb "keyward-$VERSION-linux-$DEB_ARCH.deb"
+          mv keyward.rpm "keyward-$VERSION-linux-$RPM_ARCH.rpm"
+          mv keyward.AppImage "keyward-$VERSION-linux-$RPM_ARCH.AppImage"
+          tar -czf "keyward-$VERSION-linux-$ARCH.tar.gz" bin lib
+          mv glaze-sbom.cdx.json "keyward-$VERSION-linux-$ARCH.sbom.cdx.json"
+          mv glaze-notices.txt "keyward-$VERSION-linux-$ARCH-THIRD_PARTY_NOTICES.txt"
           for f in keyward-*; do
             case "$f" in
               *.sha256) ;;
-              *.sbom.cdx.json) ;;
-              *) [ -f "$f" ] || continue; [ -f "$f.sha256" ] || sha256sum "$f" > "$f.sha256" ;;
+              *) [ -f "$f.sha256" ] || sha256sum "$f" > "$f.sha256" ;;
             esac
           done
+          ls -la keyward-*
       - uses: actions/upload-artifact@v4
         with:
           name: linux-${{ matrix.arch }}
           path: dist/keyward-*
+          if-no-files-found: error
 
   publish:
     name: Publish
     needs: [macos, windows, linux]
+    if: ${{ startsWith(github.ref, 'refs/tags/v') }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
+      - uses: Bogdanp/setup-racket@v1.15
+        with:
+          version: stable
+          distribution: full
+          architecture: x64
+      # raco rivet sign-manifest signs the feed; the format and the client's
+      # trust root (racket/update-trust.rkt) are unchanged by the UI stack.
+      - name: Install pinned Rivet (catalog; signs the update feed)
+        run: raco pkg install --auto --no-docs "https://github.com/turlamai/rivet.git#${{ needs.validate.outputs.rivet-pin }}"
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
@@ -319,12 +476,10 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p dist
-          # cp -R merges: release legs can leave a dist/keyward-linux-<arch>/
-          # staging bundle in the artifacts, and a plain mv dies on the
-          # directory collision ("Directory not empty").
           for a in macos-arm64 macos-x64 windows linux-x64 linux-arm64; do
             cp -R "artifacts/$a/." dist/
           done
+          ls -la dist
       - name: Sign the update feed
         env:
           UPDATE_ED25519_PRIVATE_KEY_B64: ${{ secrets.UPDATE_ED25519_PRIVATE_KEY_B64 }}
@@ -332,7 +487,7 @@ jobs:
           set -euo pipefail
           # docs/UPDATE-SECURITY.md release-signing prerequisite: fail closed
           # without the correct signing secret — a release never ships
-          # without its signed feed (docs/UPDATE-SECURITY.md, issue #15).
+          # without its signed feed.
           if [[ -z "${UPDATE_ED25519_PRIVATE_KEY_B64:-}" ]]; then
             echo "::error::UPDATE_ED25519_PRIVATE_KEY_B64 is missing; refusing to publish without a signed update feed" >&2
             exit 1
@@ -348,54 +503,59 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          VERSION="${GITHUB_REF_NAME#v}"
-          # Keep-a-Changelog section: "## [0.1.0] - 2026-10-13" — match the
-          # bracketed version followed by " - "; a trailing " .0" suffix
-          # must not match "[0.1]".
+          VERSION="${{ needs.validate.outputs.version }}"
+          # Keep-a-Changelog section: "## [0.1.0] - 2026-11-25".
           awk -v header="## [${VERSION}] - " '
             index($0, header) == 1 {on=1; next}
             on && /^## / {exit}
             on {print}
           ' CHANGELOG.md > /tmp/notes.md
           test -s /tmp/notes.md || { echo "empty release notes" >&2; exit 1; }
-          # Release only versioned installers, portable archives, and the
-          # SBOM evidence; keep individual checksums in CI artifacts.
-          cd dist
-          cat *.sha256 | sed 's/ \*/  /' | LC_ALL=C sort -k2 > SHA256SUMS
-          sha256sum --check SHA256SUMS
-          cd ..
+          cat >> /tmp/notes.md <<'EOF'
+
+          ## What is verified, and what is not
+
+          - The real-window product journey (open a disposable vault, deep
+            check, generate, copy and auto-clear, add / import / delete,
+            stage and promote, snapshots, stray scan, keyboard) passes on
+            macOS, Windows and Linux in CI, and on the packaged Linux program.
+          - The carrier opens no network listener: the page talks to the
+            engine over an in-process channel.
+          - macOS builds are Developer ID-signed and notarized.
+          - **The Windows installer is not Authenticode-signed**: SmartScreen
+            warns on first run.
+          - **The Linux packages (deb, rpm, AppImage, Flatpak) are not
+            signed** with a vendor key; verify them with `SHA256SUMS`.
+          - There is no in-app updater; installs do not check for updates.
+          EOF
+          # Release only versioned installers, portable archives, the SBOM
+          # evidence and the signed feed; individual checksum sidecars stay
+          # in the CI artifacts.
           mkdir -p public
           for suffix in \
             macos-arm64.dmg macos-arm64.zip macos-x64.dmg macos-x64.zip \
             windows-x64.msi windows-x64.zip \
-            linux-arm64.tar.gz linux-arm64.zip linux-x64.tar.gz linux-x64.zip \
+            linux-arm64.tar.gz linux-x64.tar.gz \
             linux-arm64.deb linux-amd64.deb \
             linux-aarch64.AppImage linux-x86_64.AppImage \
+            linux-arm64.flatpak linux-x64.flatpak \
             linux-arm64.sbom.cdx.json linux-x64.sbom.cdx.json \
-            windows-x64.sbom.cdx.json \
-            linux-arm64.flatpak linux-x64.flatpak; do
+            linux-arm64-THIRD_PARTY_NOTICES.txt linux-x64-THIRD_PARTY_NOTICES.txt; do
             name="keyward-$VERSION-$suffix"
             test -s "dist/$name" || { echo "::error::Missing or empty $name"; exit 1; }
             cp "dist/$name" public/
           done
           for arch in aarch64 x86_64; do
-            rpm="$(find dist -maxdepth 1 -type f -name "keyward-$VERSION-*-linux-$arch.rpm" -print -quit)"
+            rpm="$(find dist -maxdepth 1 -type f -name "keyward-$VERSION-linux-$arch.rpm" -print -quit)"
             test -s "$rpm" || { echo "::error::Missing RPM $arch"; exit 1; }
             cp "$rpm" public/
           done
-          # The signed update feed rides every release (docs/UPDATE-SECURITY.md
-          # release-signing prerequisite); it is not a keyward-* file so it
-          # joins the inventory explicitly.
           test -s dist/update-manifest.json || { echo "::error::Missing update-manifest.json"; exit 1; }
           cp dist/update-manifest.json public/
-          # Rebuild the public checksum inventory after staging, so the
-          # published SBOMs are covered too (the CI sidecars cover binaries).
-          # RPM revision is independent of app SemVer.
-          # 17 installers/archives/SBOMs + 2 RPMs + 2 Flatpak bundles
-          # + 1 signed update feed.
-          test "$(find public -maxdepth 1 -type f -name 'keyward-*' | wc -l)" -eq 21
+          # 20 installers/archives/SBOMs/notices + 1 signed update feed.
+          test "$(find public -maxdepth 1 -type f -name 'keyward-*' | wc -l)" -eq 20
           (cd public && sha256sum keyward-* update-manifest.json | LC_ALL=C sort -k2 > SHA256SUMS && sha256sum -c SHA256SUMS)
-          test "$(wc -l < public/SHA256SUMS)" -eq 22
+          test "$(wc -l < public/SHA256SUMS)" -eq 21
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
             gh release edit "$GITHUB_REF_NAME" --title "Keyward $VERSION" --notes-file /tmp/notes.md
             gh release upload "$GITHUB_REF_NAME" public/* --clobber

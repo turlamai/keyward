@@ -12,7 +12,7 @@ AGPL-3.0 许可的免费发布基础设施工具，不接商业激活。
 
 提供 macOS、Windows、Linux 桌面预览。连接真实发布凭据前，先使用可丢弃的合成密钥库。
 
-从[官方 Releases](https://github.com/turlamai/keyward/releases)选择明确标注系统和架构的附件，阅读该版本说明并核对附带校验文件。未列出的附件或平台不视为已交付。预览构建可能没有系统发行者签名或公证；不要为安装而关闭系统安全保护。
+从[官方 Releases](https://github.com/turlamai/keyward/releases)选择明确标注系统和架构的附件，阅读该版本说明并核对附带校验文件。未列出的附件或平台不视为已交付。macOS 版本为 Developer ID 签名并公证；Windows 安装包暂未做 Authenticode 签名，Linux 安装包暂未做厂商签名：安装前请以 `SHA256SUMS` 校验，Windows 首次运行会出现 SmartScreen 提示，不要为安装而关闭系统安全保护。
 
 ## 第一次使用
 

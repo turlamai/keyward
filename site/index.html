@@ -88,7 +88,7 @@
             <div class="kit-container">
                 <span class="kit-eyebrow" data-i18n="kicker">本地保险库 · 值不显示 · 零网络</span>
                 <h1 data-i18n="hero-title">给你的更新签名钥，一个像样的家。</h1>
-                <p class="kit-text-2 kw-availability" data-i18n="hero.availability">v0.3.0 已发布。macOS / Windows / Linux 三平台原生应用，源码以 AGPL-3.0 许可开放。</p>
+                <p class="kit-text-2 kw-availability" data-i18n="hero.availability">v0.1.0 已发布。macOS / Windows / Linux 三平台共用一套界面，源码以 AGPL-3.0 许可开放。</p>
                 <p class="kit-lead" data-i18n="hero-lede">桌面应用的在线更新全靠同一套信任模型：私钥签更新清单，公钥嵌在已装应用里验签——Sparkle、Tauri、electron-updater、WinSparkle 都是它。可私钥的日常托管没人替你管：一次泄漏、一份散件、一次误删，断的就是整条更新线。Keyward 把这件事变成点按钮。</p>
                 <div class="kit-btn-row">
                     <div class="kit-dl">
@@ -108,15 +108,15 @@
                     </div>
                     <a class="kit-btn kit-btn--secondary" href="https://github.com/turlamai/keyward" data-i18n="hero.source">查看源码</a>
                 </div>
-                <p class="kit-hero-meta"><span class="kit-badge" data-i18n="hero.badge">v0.3.0 · AGPL-3.0 · macOS / Windows / Linux</span></p>
+                <p class="kit-hero-meta"><span class="kit-badge" data-i18n="hero.badge">v0.1.0 · AGPL-3.0 · macOS / Windows / Linux</span></p>
             </div>
         </section>
 
-        <!-- Features shipped in v0.3.0 -->
+        <!-- Features shipped in v0.1.0 -->
         <section class="kit-section kit-section--alt kw-showcase" id="visual-showcase" aria-label="Keyward features shipped in v0.3.0">
             <div class="kit-container">
                 <div class="kw-vs-intro">
-                    <span class="kw-vs-label">SHIPPED IN v0.3.0 · 已随 v0.3.0 交付</span>
+                    <span class="kw-vs-label">SHIPPED IN v0.1.0 · 已随 v0.1.0 交付</span>
                     <h2 class="kit-h2" style="margin-inline: auto;" data-i18n="vs.title">保密即界面，状态即安全。</h2>
                     <p class="kit-lead" style="margin-inline: auto;" data-i18n="vs.lead">四个界面钉死日常体验：概览、轮换、快照、散钥扫描——值不上屏，暴露必披露，破坏必确认。</p>
                 </div>
@@ -230,7 +230,7 @@
                     </div>
                     <div class="kit-card">
                         <h3 data-i18n="dl-win-lin-title">Windows（x64）/ Linux</h3>
-                        <p data-i18n="dl-win-lin">Windows（WinUI 3 原生壳）为 MSI + 便携 zip；Linux（GTK4 原生壳）为 x64 / arm64 的 deb、rpm、AppImage、tar.gz 与便携 zip。均随附 SHA256SUMS、逐文件 .sha256 与 SBOM。</p>
+                        <p data-i18n="dl-win-lin">Windows 为 MSI + 便携 zip；Linux 为 x64 / arm64 的 deb、rpm、AppImage、Flatpak 与 tar.gz。均随附 SHA256SUMS 与 SBOM。macOS 已签名并公证；Windows 与 Linux 安装包暂未签名，请以 SHA256SUMS 校验。</p>
                         <p style="margin-top: 16px;"><a class="kit-btn kit-btn--secondary" data-kit-dl="win" href="https://github.com/turlamai/keyward/releases/latest" data-i18n="dl-win-go">下载 MSI →</a></p>
                         <p class="kit-text-3 kw-dl-links">
                             <a href="https://github.com/turlamai/keyward/releases/latest">Linux x64 deb</a> ·
@@ -247,7 +247,7 @@
                             <span class="kit-chip">Windows</span>
                             <span class="kit-chip">Linux</span>
                         </p>
-                        <p class="kit-text-2" style="margin-top: 14px;" data-i18n="dl-platforms-body">v0.3.0 已发布：三平台安装包与校验文件都在 Releases 页。这是开发者工具，不做移动端。</p>
+                        <p class="kit-text-2" style="margin-top: 14px;" data-i18n="dl-platforms-body">v0.1.0 已发布：三平台安装包与校验文件都在 Releases 页。这是开发者工具，不做移动端。</p>
                     </div>
                 </div>
             </div>
@@ -258,10 +258,10 @@
             <div class="kit-container">
                 <h2 class="kit-h2" data-i18n="roadmap-title">已交付</h2>
                 <ul class="kw-roadmap">
-                    <li><strong>v0.2.0</strong><span data-i18n="rm1">Windows（WinUI 3）/ Linux（GTK4）原生壳交付，三平台安装包全矩阵</span></li>
-                    <li><strong>v0.3.0</strong><span data-i18n="rm2">两阶段轮换：Stage → Promote，配对不绿不能晋升</span></li>
-                    <li><strong>v0.3.0</strong><span data-i18n="rm3">散钥扫描：路径 / 行号 / 指纹，值永不显示</span></li>
-                    <li><strong>v0.3.0</strong><span data-i18n="rm4">更新器格式互通：Sparkle / minisign / Tauri 导入导出，剪贴板直达</span></li>
+                    <li><strong>v0.1.0</strong><span data-i18n="rm1">三平台合一：一个 Glaze 载体、一套界面，macOS / Windows / Linux 安装包全矩阵</span></li>
+                    <li><strong>v0.1.0</strong><span data-i18n="rm2">两阶段轮换：Stage → Promote，配对不绿不能晋升</span></li>
+                    <li><strong>v0.1.0</strong><span data-i18n="rm3">散钥扫描：路径 / 行号 / 指纹，值永不显示</span></li>
+                    <li><strong>v0.1.0</strong><span data-i18n="rm4">更新器格式互通：Sparkle / minisign / Tauri 导入导出，剪贴板直达</span></li>
                 </ul>
             </div>
         </section>
@@ -271,7 +271,7 @@
             <div class="kit-container">
                 <span class="kit-kicker" data-i18n="start.kicker">开始使用</span>
                 <h2 class="kit-h2" data-i18n="start.title">从一次有效使用开始。</h2>
-                <p class="kit-lead" style="margin-top: 18px;"><span class="kit-badge" data-i18n="start.status">v0.3.0 已发布，三平台原生应用；源码以 AGPL-3.0 许可开放。</span> <span data-i18n="start.platforms">macOS、Windows、Linux 桌面版均可下载。连接真实发布凭据前，先用可丢弃的合成密钥库练手。</span></p>
+                <p class="kit-lead" style="margin-top: 18px;"><span class="kit-badge" data-i18n="start.status">v0.1.0 已发布，三平台应用；源码以 AGPL-3.0 许可开放。</span> <span data-i18n="start.platforms">macOS、Windows、Linux 桌面版均可下载。连接真实发布凭据前，先用可丢弃的合成密钥库练手。</span></p>
                 <div class="kit-steps" style="margin-top: 44px;">
                     <div class="kit-step">
                         <p data-i18n="start.s1.body">建立临时测试库；查看条目名称和指纹，不展示私钥值。</p>
@@ -340,9 +340,9 @@
             "nav.why": "为什么需要", "nav.principles": "设计原则", "nav.start": "三步开始", "nav.download": "下载", "nav.guide": "手册", "nav.github": "GitHub",
             "kicker": "本地保险库 · 值不显示 · 零网络",
             "hero-title": "给你的更新签名钥，一个像样的家。",
-            "hero.availability": "v0.3.0 已发布。macOS / Windows / Linux 三平台原生应用，源码以 AGPL-3.0 许可开放。",
+            "hero.availability": "v0.1.0 已发布。macOS / Windows / Linux 三平台共用一套界面，源码以 AGPL-3.0 许可开放。",
             "hero-lede": "桌面应用的在线更新全靠同一套信任模型：私钥签更新清单，公钥嵌在已装应用里验签——Sparkle、Tauri、electron-updater、WinSparkle 都是它。可私钥的日常托管没人替你管：一次泄漏、一份散件、一次误删，断的就是整条更新线。Keyward 把这件事变成点按钮。",
-            "hero.badge": "v0.3.0 · AGPL-3.0 · macOS / Windows / Linux",
+            "hero.badge": "v0.1.0 · AGPL-3.0 · macOS / Windows / Linux",
             "hero.source": "查看源码",
             "dl.generic": "获取 Keyward",
             "dl.mac": "macOS 版", "dl.win": "Windows 版", "dl.linux": "Linux 版",
@@ -387,18 +387,18 @@
             "dl-mac-go": "下载 DMG →",
             "dl-all": "全部版本 →",
             "dl-win-lin-title": "Windows（x64）/ Linux",
-            "dl-win-lin": "Windows（WinUI 3 原生壳）为 MSI + 便携 zip；Linux（GTK4 原生壳）为 x64 / arm64 的 deb、rpm、AppImage、tar.gz 与便携 zip。均随附 SHA256SUMS、逐文件 .sha256 与 SBOM。",
+            "dl-win-lin": "Windows 为 MSI + 便携 zip；Linux 为 x64 / arm64 的 deb、rpm、AppImage、Flatpak 与 tar.gz。均随附 SHA256SUMS 与 SBOM。macOS 已签名并公证；Windows 与 Linux 安装包暂未签名，请以 SHA256SUMS 校验。",
             "dl-win-go": "下载 MSI →",
             "dl-platforms-title": "平台",
-            "dl-platforms-body": "v0.3.0 已发布：三平台安装包与校验文件都在 Releases 页。这是开发者工具，不做移动端。",
+            "dl-platforms-body": "v0.1.0 已发布：三平台安装包与校验文件都在 Releases 页。这是开发者工具，不做移动端。",
             "roadmap-title": "已交付",
-            "rm1": "Windows（WinUI 3）/ Linux（GTK4）原生壳交付，三平台安装包全矩阵",
+            "rm1": "三平台合一：一个 Glaze 载体、一套界面，macOS / Windows / Linux 安装包全矩阵",
             "rm2": "两阶段轮换：Stage → Promote，配对不绿不能晋升",
             "rm3": "散钥扫描：路径 / 行号 / 指纹，值永不显示",
             "rm4": "更新器格式互通：Sparkle / minisign / Tauri 导入导出，剪贴板直达",
             "start.kicker": "开始使用",
             "start.title": "从一次有效使用开始。",
-            "start.status": "v0.3.0 已发布，三平台原生应用；源码以 AGPL-3.0 许可开放。",
+            "start.status": "v0.1.0 已发布，三平台应用；源码以 AGPL-3.0 许可开放。",
             "start.platforms": "macOS、Windows、Linux 桌面版均可下载。连接真实发布凭据前，先用可丢弃的合成密钥库练手。",
             "start.s1.body": "建立临时测试库；查看条目名称和指纹，不展示私钥值。",
             "start.s2.body": "逐个校验密钥对，分别处理每个失败结果；一个密钥正确不表示整个节均正确。",
@@ -416,9 +416,9 @@
             "nav.why": "Why", "nav.principles": "Principles", "nav.start": "Get started", "nav.download": "Download", "nav.guide": "Guide", "nav.github": "GitHub",
             "kicker": "local vault · copy-only values · zero network",
             "hero-title": "Give your update-signing keys a proper home.",
-            "hero.availability": "v0.3.0 is out. Native apps for macOS, Windows and Linux; source licensed AGPL-3.0.",
+            "hero.availability": "v0.1.0 is out. One app for macOS, Windows and Linux; source licensed AGPL-3.0.",
             "hero-lede": "Desktop apps that update themselves all share one trust model: a private key signs the update manifest, a public key embedded in the installed app verifies it — Sparkle, Tauri, electron-updater, WinSparkle. What nobody hands you is custody of the private half. One leak, one stray copy, one accidental delete, and your whole update line goes down. Keyward turns that into buttons.",
-            "hero.badge": "v0.3.0 · AGPL-3.0 · macOS / Windows / Linux",
+            "hero.badge": "v0.1.0 · AGPL-3.0 · macOS / Windows / Linux",
             "hero.source": "View source",
             "dl.generic": "Get Keyward",
             "dl.mac": "For macOS", "dl.win": "For Windows", "dl.linux": "For Linux",
@@ -463,18 +463,18 @@
             "dl-mac-go": "Download DMG →",
             "dl-all": "All releases →",
             "dl-win-lin-title": "Windows (x64) / Linux",
-            "dl-win-lin": "Windows (native WinUI 3 host): an MSI plus a portable zip. Linux (native GTK4 host): deb, rpm, AppImage, tar.gz and portable zip for x64 and arm64. All carry SHA256SUMS, per-file .sha256 sidecars and SBOMs.",
+            "dl-win-lin": "Windows: an MSI plus a portable zip. Linux: deb, rpm, AppImage, Flatpak and tar.gz for x64 and arm64. All carry SHA256SUMS and an SBOM. macOS is signed and notarized; the Windows and Linux packages are not signed for now — verify them against SHA256SUMS.",
             "dl-win-go": "Download MSI →",
             "dl-platforms-title": "Platforms",
-            "dl-platforms-body": "v0.3.0 is out: installers and checksum files for all three platforms are on the Releases page. A developer tool — no mobile.",
+            "dl-platforms-body": "v0.1.0 is out: installers and checksum files for all three platforms are on the Releases page. A developer tool — no mobile.",
             "roadmap-title": "Shipped",
-            "rm1": "Windows (WinUI 3) and Linux (GTK4) native hosts — the full three-platform installer matrix",
+            "rm1": "Three platforms, one UI: a single glaze carrier with the full macOS / Windows / Linux installer matrix",
             "rm2": "Two-phase rotation: Stage → Promote, gated by pairing verification",
             "rm3": "Stray-key scan: path / line / fingerprint, values never shown",
             "rm4": "Updater formats: Sparkle / minisign / Tauri import & export, clipboard-only",
             "start.kicker": "Get started",
             "start.title": "Start with one useful session.",
-            "start.status": "v0.3.0 is out — native apps on all three platforms; source licensed AGPL-3.0.",
+            "start.status": "v0.1.0 is out — one app for all three platforms; source licensed AGPL-3.0.",
             "start.platforms": "Desktop builds for macOS, Windows and Linux are downloadable. Rehearse on a synthetic disposable vault before connecting real release credentials.",
             "start.s1.body": "Create a temporary test vault; inspect entry names and fingerprints rather than displaying private values.",
             "start.s2.body": "Validate each key pair and inspect every reported failure separately. One valid key does not validate all keys in a section.",

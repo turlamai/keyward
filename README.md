@@ -23,14 +23,14 @@ rotates *you*.
 > every daily operation, wiring CI, shipping updates, and key rotation,
 > written for complete beginners.
 
-Keyward is a small desktop app that guards those keys. Built on the family
-Rivet line — a Racket engine with native hosts — it keeps the vault file in
-your own synced folder and adds the discipline a plaintext store lacks:
+Keyward is a small desktop app that guards those keys. A Racket engine behind one
+Glaze carrier (the system WebView, one UI for macOS, Windows and Linux), it keeps
+the vault file in your own synced folder and adds the discipline a plaintext store lacks:
 
-- **Never displayed, copy-only.** Key values are only ever returned by an
-  explicit copy-to-clipboard action. The copy announces its own exposure
-  (any app can read the clipboard) and auto-clears after 30 s — unless
-  you have copied something else in between, which is never erased.
+- **Never displayed, copy-only.** Key values never reach the UI: a copy goes
+  through the carrier straight to the clipboard, which announces its own exposure
+  (any app can read the clipboard) and auto-clears after 30 s — unless you have
+  copied something else in between, which is never erased.
 - **Loss protection.** Every mutation snapshots the store first (append-only,
   inside the synced folder); writes are atomic and permissions are tightened.
 - **Deep check.** Parses each key (Ed25519 / RSA PKCS#8, base64-DER,
@@ -71,52 +71,49 @@ Download from [Releases](https://github.com/turlamai/keyward/releases/latest):
 |---|---|---|
 | macOS 14+ (Apple Silicon & Intel) | `keyward-<version>-macos-<arch>.dmg` — `arm64` / `x64` — plus a portable `.zip` per arch | manual download only — a key vault does not update itself ([docs/UPDATE-SECURITY.md](docs/UPDATE-SECURITY.md)) |
 | Windows 10+ x64 | `keyward-<version>-windows-x64.msi` installer, or `keyward-<version>-windows-x64.zip` portable | manual download only |
-| Linux x64 / arm64 | `keyward-<version>-linux-x86_64.AppImage` / `keyward-<version>-linux-aarch64.AppImage`, `keyward-<version>-linux-<distro-arch>.deb`, `.rpm`, the Flatpak bundle `keyward-<version>-linux-<arch>.flatpak` (app id `site.jrtx.keyward`; `flatpak --user install ./keyward-<version>-linux-<arch>.flatpak`), or the portable `tar.gz` / `.zip` | manual download only |
+| Linux x64 / arm64 | `keyward-<version>-linux-x86_64.AppImage` / `keyward-<version>-linux-aarch64.AppImage`, `keyward-<version>-linux-<distro-arch>.deb`, `.rpm`, the Flatpak bundle `keyward-<version>-linux-<arch>.flatpak` (app id `site.jrtx.keyward`; `flatpak --user install ./keyward-<version>-linux-<arch>.flatpak`), the portable `tar.gz` | manual download only |
 
-Every release carries a `SHA256SUMS` manifest, per-asset `.sha256`
-sidecars, CycloneDX SBOMs and Sigstore build provenance
-(`gh attestation verify <file> -R turlamai/keyward`).
+Every release carries a `SHA256SUMS` manifest, CycloneDX SBOMs and Sigstore
+build provenance (`gh attestation verify <file> -R turlamai/keyward`).
 
-macOS builds are ad-hoc signed (not notarized): on first launch,
-right-click the app and choose Open to clear the Gatekeeper prompt.
-Release binaries carry no publisher code signature — verify downloads
+macOS builds are Developer ID-signed and notarized. **The Windows installer is
+not Authenticode-signed** (SmartScreen warns on first run) **and the Linux
+packages are not vendor-signed** for now: verify Windows and Linux downloads
 against `SHA256SUMS` or the attestations, not the installer signature.
 
 ## Status
 
-**v0.3.0 is out** — installers for all three desktops on the
+**v0.1.0 of the Glaze line is out** — the release line started over when the
+three native hosts (SwiftUI / WinUI 3 / GTK 4) were replaced by one carrier
+and one UI; the earlier 0.1.0 – 0.3.0 releases were withdrawn. Installers for
+all three desktops are on the
 [Releases page](https://github.com/turlamai/keyward/releases/latest):
 macOS (arm64 / x64, DMG + zip), Windows (x64, MSI + zip) and Linux (x64 /
-arm64, deb + rpm + AppImage + tar.gz + zip), each with a SHA-256 sidecar.
-The Windows (WinUI 3) and Linux (GTK4) hosts are built and CI-covered,
-and the three hosts share one interaction contract: identical status
-refreshes, dialog defaults and clipboard disclosure. 0.3.0 adds the
-two-phase rotation workflow (stage a next key without touching the
-active signing key, ship a release that trusts it, then promote —
-pairing-gated), a stray-key scanner for working trees, and
-Sparkle/Tauri key format import and export; choosing a vault now
-switches immediately instead of after a relaunch.
+arm64, deb + rpm + AppImage + Flatpak + tar.gz). The two-phase rotation
+workflow, the stray-key scanner and Sparkle/Tauri key format import and
+export carry over unchanged. The carrier opens no network socket: the page
+talks to the engine over an in-process channel.
 
 ## Security model
 
 The vault is plaintext **by design** — it lives in a private sync between
 your own trusted devices, and the budget goes to full-disk encryption on
 each device instead. Keyward never sends a key anywhere: there is no
-network code in the engine. See `AGENTS.md` for the operating rules
+network code in the engine and the carrier opens no listener. See `AGENTS.md` for the operating rules
 (never print values, never commit the vault, collect strays immediately).
 
 ## Development
 
 ```bash
-raco rivet dev        # build backend + macOS host, run the app
-raco test tests/      # engine tests (store + key metadata)
-raco rivet package    # distributable
+racket host/main.rkt        # run the app (glaze carrier, native transport)
+raco test tests/            # engine tests (store, key metadata, rotation, scan)
+racket host/verify.rkt      # real-window self-check: 19-step journey + verdict
+raco glaze build --name keyward --entry host/main.rkt --installer   # package
 ```
 
-- Shared engine: `racket/backend.rkt` + `racket/core/` (RVT1 contract — the
-  wire surface shared by every future host)
-- macOS UI: `macos-host/Sources/RivetHost/`
-- Windows UI: `windows/` · Linux UI: `linux/`
+- Engine: `racket/backend.rkt` + `racket/core/` (RVT1 contract, `rivet-schema.json`)
+- Carrier and UI: `host/` (see [host/README.md](host/README.md)); design tokens in
+  `design/prototype/shared.css`
 
 ## License
 

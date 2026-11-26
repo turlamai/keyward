@@ -1,4 +1,4 @@
-# Rivet agent contract
+# Keyward agent contract
 
 ## 家族设计（必读入口）
 
@@ -37,42 +37,49 @@ without stashing, resetting or overwriting their work. Missing/offline policy
 inputs must be reported as unverified, not silently claimed current.
 
 
-Human-first. Agent-native. Local by design.
-
 ## Start every task here
 
 ```bash
-raco rivet inspect --json
-raco rivet doctor --json
+raco test tests/            # engine
+racket host/verify.rkt      # real-window carrier self-check (19-step journey)
 ```
 
-`inspect` is the machine-readable project map. It identifies the shared Racket
-backend, each native UI edit point, platform maturity, generated directories,
-and safe lifecycle commands. `doctor` reports the exact local toolchain and
-returns a failing exit status when the current host is not usable.
+`host/README.md` is the carrier map: entry, routes, capability, harness and the
+production-vs-verifier difference. `raco glaze schema write` regenerates the
+committed `glaze-schema.json` from `host/main.rkt`.
 
-## Architecture boundary
+## Architecture boundary (owner decision 2026-11-23, keyward#34)
 
-- Keep shared application and domain logic in `racket/backend.rkt`.
-- Keep Windows UI native in WinUI 3 / C++/WinRT under `windows/`.
-- Keep macOS UI native in SwiftUI/AppKit under `macos-host/`.
-- Keep Linux UI native in GTK4 under `linux/`.
-- Do not introduce a cross-platform UI DSL or bypass RVT1 with an ad-hoc IPC.
-- iOS/iPadOS/watchOS and Android are foundation targets until their
-  generated app, embedding, packaging, signing, and device workflows exist.
+- Keep shared application and domain logic in `racket/backend.rkt` and
+  `racket/core/` (RVT1 contract, `rivet-schema.json`).
+- The UI is **one glaze carrier** — `host/` (Racket carrier + `host/web` page) on
+  the system WebView. The native hosts (`windows/`, `macos-host/`, `linux/`) are
+  retired; do not reintroduce a per-platform UI.
+- The page never decides anything: every read, check and mutation is an engine
+  RPC. Do not bypass RVT1 with an ad-hoc IPC.
+- The carrier runs `#:transport 'native` (no listening socket). Keep it that
+  way; the self-check asserts `no-listener`.
+- The production window runs under `host-capability` (default-deny). A new
+  route carries a `#:permission` class and its class is granted there, or
+  `scripts/check-route-permissions.py` fails the build.
+- `entry-get` and `keypair-export` are carrier-only RPCs (clipboard path).
+  Never route them to the page; `scripts/check-rpc-surface.py` gates this.
+- The design prototype (`design/prototype/`) is the UI source of truth and
+  `design/prototype/shared.css` the token source; `host/web` implements them.
+- iOS/iPadOS/watchOS and Android are not targets.
 
 ## Capability sourcing
 
 When a feature is not already present, do not reject Racket or add another
-runtime by reflex. Read `capability-sourcing` from `inspect --json`, then choose
-the narrowest boundary that fits:
+runtime by reflex. Choose the narrowest boundary that fits:
 
 1. Prefer a Racket built-in or maintained package. Discover candidates with
    `raco docs <term>`, `raco pkg show`, and
    `raco pkg catalog-show --all --only-names`; inspect a candidate with
    `raco pkg catalog-show --modules <package>`.
-2. Put UI, lifecycle, accessibility, notification, device, and other
-   platform-owned behavior in the first-party native host.
+2. Put lifecycle, accessibility, notification, device, and other
+   platform-owned behavior in the carrier (`host/`), behind a carrier route
+   with a permission class.
 3. Use FFI for a stable C ABI that needs frequent, low-latency in-process
    calls. Hide `ffi/unsafe` behind a small safe module with explicit ownership,
    callback, thread, ABI, and native-library packaging rules.
@@ -95,65 +102,43 @@ failure behavior, packaged dependency closure, and a clean-machine smoke test.
 Source you may edit:
 
 - `racket/`
-- `windows/`
-- `macos-host/`
-- `linux/`
-- `rivet.rktd`
+- `host/` (`web/` is the product UI; `e2e.js` is the harness)
+- `design/prototype/`
+- `glaze.rktd`, `scripts/`, `.github/workflows/`, `flatpak/`, `assets/`
 - `rivet-schema.json` when an API compatibility break is intentional
-- declared application resources
 
 Generated output you should not hand-edit:
 
-- `windows/GeneratedBackend.hpp`
-- `macos-host/Sources/RivetHost/GeneratedBackend.swift`
-- `linux/GeneratedBackend.hpp`
-- `.rivet/`
-- `build/`
-- `dist/`
-- `windows/Generated Files/`
-- `windows/obj/`
-- `windows/RivetHost/`
-- `macos-host/.build/`
-
-`raco rivet build` regenerates the typed clients. Use `raco rivet clean` to
-remove transient build output while keeping the generated client sources that
-make the native API reviewable.
+- `glaze-schema.json` — regenerate with `raco glaze schema write`
+- `.glaze/`, `build/`, `dist/`
 
 ## Verification loop
 
+```bash
+raco test tests/                                   # engine
+raco make racket/backend.rkt                       # compiles against RVT1
+racket host/verify.rkt                             # real window, typed verdict
+raco glaze schema write && git diff --exit-code -- glaze-schema.json
+python scripts/check-rpc-surface.py                # routes vs rivet-schema.json
+python scripts/check-route-permissions.py          # every route classified
+bash scripts/check-release-version.sh              # VERSION == version.rkt == CHANGELOG
+```
+
 This project includes a source-controlled `rivet-schema.json` API baseline.
-Refresh it only after deliberately changing the public backend schema:
+Refresh it only after deliberately changing the public backend schema
+(`raco rivet schema --output rivet-schema.json`) and run the compatibility gate
+(`raco rivet schema check rivet-schema.json --json`) before accepting API changes.
 
-```bash
-raco rivet schema --output rivet-schema.json
-```
+Pull-request CI (`ci.yml`, `host-ci.yml`, `packaged-smoke.yml`) must be green on
+Windows, macOS and Linux (x64 and arm64 Linux runners) before merge. A release
+job must not be the first place a platform is exercised. Pin glaze and rivet in
+`host-ci.yml`; the other workflows read the pins from there.
 
-Before accepting later API changes, run the compatibility gate. Adding a new
-RPC, Event, State, Record, or Enum type is compatible; removing one or changing
-a type, argument order, result, Record field/order, or an existing Enum's
-cases/order is breaking:
+Release identity: bump `VERSION`, `racket/core/version.rkt` and the CHANGELOG
+section together; `scripts/check-release-version.sh` gates the three. Release
+signing stance (2026-11-25): macOS Developer ID + notarization; Windows and
+Linux unsigned for now, and the release notes say so.
 
-```bash
-raco rivet schema check rivet-schema.json --json
-```
-
-```bash
-raco rivet build
-raco rivet dev
-raco rivet package
-raco rivet verify
-```
-
-Pull-request CI must run `raco rivet build` for the Windows, macOS, and Linux
-hosts on the same runner image classes used for release. A release job must not
-be the first place native source is compiled. Follow Rivet's native-host CI
-guide: https://github.com/turlamai/rivet/blob/main/docs/ci.md
-
-After changing RPC, Event, State, Record, or Enum declarations, run the
-compatibility gate and rebuild before editing code that consumes generated native APIs.
-Update the baseline only when a breaking change is intentional and governed by
-the application's release policy. Preserve the first `rivet: error:` line and
-nearby compiler output when diagnosing a failure.
 ## Keyward operating rules (product-specific, override nothing above)
 
 - **Never print a key value.** Values travel backend → clipboard only
