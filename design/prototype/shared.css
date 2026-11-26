@@ -84,6 +84,8 @@ h3 { font-size: var(--t14); font-weight: 600; }
 .product .name { font-size: var(--t13); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .product small { font-size: var(--t12); color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .product .count { margin-left: auto; font-size: var(--t12); color: var(--ink-2); font-variant-numeric: tabular-nums; }
+/* Secondary ink loses contrast on the selection tint, so the selected row states everything in primary ink */
+.product[aria-current="true"] :is(small, .count) { color: var(--ink); }
 .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; background: var(--ok); }
 .dot.warn { background: var(--warn); } .dot.neutral { background: var(--neutral); }
 .sidebar nav p { padding: var(--s4) var(--s8); }
