@@ -20,7 +20,7 @@
   --dk-badge: #3a362f; --dk-ok: #81c784; --dk-warn: #ffb74d; --dk-neutral: #98989e; --dk-danger: #ff8a80;
   --dk-focus: #d08a6e;
   --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
-  --mono: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --mono: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", "Noto Sans Mono CJK SC", "Noto Sans CJK SC", "Microsoft YaHei", monospace;
   --t12: 12px; --t13: 13px; --t14: 14px; --t16: 16px; --t18: 18px; --t24: 24px;
   --s4: 4px; --s8: 8px; --s12: 12px; --s16: 16px; --s24: 24px; --s32: 32px;
   --r4: 4px; --r8: 8px; --r12: 12px;
@@ -219,3 +219,11 @@ dialog::backdrop { background: rgba(20, 16, 12, .38); }
   .entry { flex-wrap: wrap; } .entryactions { width: 100%; justify-content: flex-end; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
+
+/* ---- temperament profile pass ---- */
+/* typography baseline (family standard 2026-11-26-temperament-profiles): CJK/Latin spacing and kinsoku come from the rendering layer,
+   never from typed spaces (§4, §10). Values stay in the token block above. */
+body { text-autospace: normal; line-break: strict; }
+::selection { background: var(--accent-soft); color: var(--ink); }
+/* Paired neutral scrollbar for both themes; thin and non-distracting. */
+html { scrollbar-color: var(--line) transparent; }
